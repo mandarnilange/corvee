@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{.Theme}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.WorkspaceName}} — Board</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-board">
+{{template "header" .}}
+<main>
+  <section class="filterbar" aria-label="Filters">
+    <input type="search" class="search" placeholder="Search title, id, description…" data-filter-search aria-label="Search items">
+    {{if .Filters.Statuses}}
+    <div class="chip-group" data-filter-group="status">
+      <span class="chip-group-label">Status</span>
+      {{range .Filters.Statuses}}<button type="button" class="chip" data-filter-value="{{.Value}}">{{.Label}} <span class="chip-count">{{.Count}}</span></button>{{end}}
+    </div>
+    {{end}}
+    {{if .Filters.Priorities}}
+    <div class="chip-group" data-filter-group="priority">
+      <span class="chip-group-label">Priority</span>
+      {{range .Filters.Priorities}}<button type="button" class="chip" data-filter-value="{{.Value}}">{{.Label}} <span class="chip-count">{{.Count}}</span></button>{{end}}
+    </div>
+    {{end}}
+    {{if .Filters.Kinds}}
+    <div class="chip-group" data-filter-group="kind">
+      <span class="chip-group-label">Kind</span>
+      {{range .Filters.Kinds}}<button type="button" class="chip" data-filter-value="{{.Value}}">{{.Label}} <span class="chip-count">{{.Count}}</span></button>{{end}}
+    </div>
+    {{end}}
+    {{if .Filters.Assignees}}
+    <div class="chip-group" data-filter-group="assignee">
+      <span class="chip-group-label">Assignee</span>
+      {{range .Filters.Assignees}}<button type="button" class="chip" data-filter-value="{{.Value}}">@{{.Label}} <span class="chip-count">{{.Count}}</span></button>{{end}}
+    </div>
+    {{end}}
+    <label class="toggle"><input type="checkbox" data-filter-toggle="show-abandoned"> Show abandoned</label>
+    <button type="button" class="link-btn" data-filter-reset>Reset</button>
+  </section>
+
+  <section class="board">
+    {{range .Columns}}
+    <div class="column" data-status="{{.Status}}">
+      <h2>{{.Label}} <span class="count" data-column-count>{{.Count}}</span></h2>
+      <div class="cards">
+        {{range .Groups}}
+        <div class="epic-group" data-epic="{{.EpicID}}">
+          {{if .EpicID}}
+          <div class="epic-header"><span class="id">{{.EpicID}}</span><span>{{.EpicTitle}}</span></div>
+          {{end}}
+          {{range .Cards}}
+          <a class="card priority-{{or .Priority "none"}}" data-id="{{.ID}}" data-status="{{.Status}}" data-priority="{{or .Priority "none"}}" data-kind="{{or .Kind "none"}}" data-assignee="{{or .Assignee "none"}}" data-epic="{{or .EpicKey ""}}" data-project="{{or .ProjectID ""}}" data-search="{{.SearchBlob}}" href="items/{{.ID}}.html">
+            <header>
+              <span class="id">{{.ID}}</span>
+              {{if .Priority}}<span class="pill priority-{{.Priority}}">{{.Priority}}</span>{{end}}
+              {{if .Kind}}<span class="pill kind">{{.Kind}}</span>{{end}}
+              {{if .TypePill}}<span class="pill type">{{.TypePill}}</span>{{end}}
+              {{if .Breadcrumb}}<span class="breadcrumb">{{.Breadcrumb}}</span>{{end}}
+            </header>
+            <h3>{{.Title}}</h3>
+            {{if .Description}}<p class="desc">{{.Description}}</p>{{end}}
+            <div class="meta-row">
+              {{if .Assignee}}<span class="assignee">@{{.Assignee}}</span>{{end}}
+              {{if .DueDate}}<span class="due{{if .DueOverdue}} overdue{{end}}">⏱ {{.DueDate}}</span>{{end}}
+              {{if .EstimatedHours}}<span class="badge" title="estimated hours">~ {{.EstimatedHours}}h</span>{{end}}
+              {{if .DependencyCount}}<span class="badge" title="dependencies">▼ {{.DependencyCount}}</span>{{end}}
+              {{if .BlockCount}}<span class="badge" title="blocks">▲ {{.BlockCount}}</span>{{end}}
+              {{if .AcceptanceCount}}<span class="badge" title="acceptance criteria">✓ {{.AcceptanceCount}}</span>{{end}}
+              {{if .CapabilityCount}}<span class="badge" title="required capabilities">⚙ {{.CapabilityCount}}</span>{{end}}
+            </div>
+            {{if .Tags}}
+            <div class="tags">
+              {{range .Tags}}<span class="tag">{{.}}</span>{{end}}
+            </div>
+            {{end}}
+          </a>
+          {{end}}
+        </div>
+        {{else}}
+        <div class="empty">no items</div>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </section>
+
+  <p class="filter-empty" data-filter-empty hidden>No items match the current filters.</p>
+</main>
+
+{{template "drawer" .}}
+{{template "item-templates" .}}
+
+<footer class="foot"><span>static dashboard rendered by <span class="mono">corvee render</span></span></footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

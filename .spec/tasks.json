@@ -1,0 +1,2757 @@
+{
+  "schema_version": 1,
+  "project_id": "TTR",
+  "project_name": "corvee (self-hosted)",
+  "critical_path": [
+    "TTR-E00-S05",
+    "TTR-E01-S01",
+    "TTR-E01-S08",
+    "TTR-E01-S19",
+    "TTR-E03-S05",
+    "TTR-E03-S12",
+    "TTR-E04-S08",
+    "TTR-E07-S02",
+    "TTR-E07-S09"
+  ],
+  "phases": [
+    {
+      "id": "TTR-E00",
+      "name": "Phase 0 — Project Skeleton",
+      "description": "Repo scaffold, Makefile, golangci-lint, CI workflow, TDD scaffolding, CLAUDE.md, tasks.json bootstrap.",
+      "deliverable": "task version returns JSON success; make ci green on remote; CLAUDE.md authored; tasks.json validated.",
+      "status": "done",
+      "completed_at": "2026-05-05T00:00:00Z",
+      "tasks": [
+        {
+          "id": "TTR-E00-S01",
+          "title": "Repo skeleton (go.mod + directory tree per §12.6)",
+          "type": "story",
+          "kind": "chore",
+          "priority": "high",
+          "estimatedHours": 1,
+          "files": [
+            "go.mod",
+            "internal/domain/doc.go",
+            "internal/usecase/doc.go",
+            "internal/adapter/*/doc.go",
+            "internal/cli/doc.go",
+            "pkg/api/doc.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [],
+          "acceptanceCriteria": [
+            "go.mod sets module github.com/mandarnilange/corvee, go 1.23 (1.23 is required because the spec §12.1 plans to use range-over-function iterators in adapter/eventlog).",
+            "All packages from §12.6 exist with a one-line doc.go each.",
+            "go build ./... exits 0."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S02",
+          "title": "Makefile per §12.7 with all targets",
+          "type": "story",
+          "kind": "chore",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "Makefile",
+            "scripts/check-coverage.sh",
+            "scripts/check-gofmt.sh"
+          ],
+          "required_capabilities": [
+            "bash",
+            "make"
+          ],
+          "dependencies": [
+            "TTR-E00-S01"
+          ],
+          "acceptanceCriteria": [
+            "Targets: build, build-all, test, test-unit, test-race, test-e2e, test-coverage, lint, ci, install-tools, hooks-install, tasks-validate, clean, release.",
+            "make help prints the target list.",
+            "make ci is the single entry point used by both local pre-push and GitHub Actions.",
+            "Coverage script enforces ≥90% domain / ≥85% usecase, skipping packages with no tests so Phase 0 stays green."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S03",
+          "title": ".golangci.yml with depguard clean-architecture enforcement",
+          "type": "story",
+          "kind": "chore",
+          "priority": "high",
+          "estimatedHours": 1.5,
+          "files": [
+            ".golangci.yml"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E00-S01"
+          ],
+          "acceptanceCriteria": [
+            "Linters enabled per §11.5: errcheck, govet, staticcheck, revive, unused, gosec, nilerr, exhaustive, depguard, ineffassign, misspell, unconvert, prealloc, bodyclose.",
+            "depguard rule: internal/domain forbids importing internal/{usecase,adapter,cli}.",
+            "depguard rule: internal/usecase forbids importing internal/{adapter,cli}.",
+            "depguard rule: internal/adapter forbids importing internal/{usecase,cli}.",
+            "Banned packages enforced: logrus, zap, testify, ginkgo, yaml.v2, yaml.v3 (per §12.5).",
+            "revive enforces godoc on every exported identifier."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S04",
+          "title": "GitHub Actions CI workflow",
+          "type": "story",
+          "kind": "chore",
+          "priority": "high",
+          "estimatedHours": 1,
+          "files": [
+            ".github/workflows/ci.yml"
+          ],
+          "required_capabilities": [
+            "github-actions"
+          ],
+          "dependencies": [
+            "TTR-E00-S02",
+            "TTR-E00-S03",
+            "TTR-E00-S05"
+          ],
+          "acceptanceCriteria": [
+            "Runs make ci on ubuntu-latest and macos-latest with Go 1.23.",
+            "Triggers on push to any branch and PRs to main.",
+            "Caches go modules.",
+            "permissions: contents: read; no untrusted-input interpolation in run: commands.",
+            "Uploads coverage.out as an artifact for inspection."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S05",
+          "title": "task version verb (TDD-first; CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 2,
+          "files": [
+            "test/e2e/version_test.go",
+            "test/e2e/helpers_test.go",
+            "internal/cli/root.go",
+            "internal/cli/version.go",
+            "internal/cli/printjson.go",
+            "internal/cli/printjson_test.go",
+            "internal/cli/root_test.go",
+            "internal/domain/version.go",
+            "internal/domain/errors.go",
+            "cmd/corvee/main.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E00-S01",
+            "TTR-E00-S02"
+          ],
+          "acceptanceCriteria": [
+            "test/e2e/version_test.go is written first and fails before any cmd/corvee code exists.",
+            "task version prints {\"ok\":true,\"data\":{\"version\":\"<v>\"}} to stdout and exits 0.",
+            "task --pretty version emits indented JSON (contains newlines).",
+            "stderr is empty at default verbosity.",
+            "internal/cli/root.go maps every domain sentinel to its §15.1 exit code, with a unit-test table covering each.",
+            "internal/cli/printjson.go is unit-tested for compact, pretty, and text modes."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S06",
+          "title": "Pre-push git hook + make hooks-install",
+          "type": "story",
+          "kind": "chore",
+          "priority": "medium",
+          "estimatedHours": 0.5,
+          "files": [
+            ".githooks/pre-push",
+            "Makefile"
+          ],
+          "required_capabilities": [
+            "bash",
+            "git"
+          ],
+          "dependencies": [
+            "TTR-E00-S02",
+            "TTR-E00-S04"
+          ],
+          "acceptanceCriteria": [
+            ".githooks/pre-push runs make ci and aborts the push on failure.",
+            "make hooks-install symlinks .githooks/* into .git/hooks/ and chmod +x's the source files.",
+            "Documented in CLAUDE.md §11."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S07",
+          "title": "CLAUDE.md authoring (working conventions for the codebase)",
+          "type": "story",
+          "kind": "docs",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "CLAUDE.md"
+          ],
+          "required_capabilities": [
+            "docs"
+          ],
+          "dependencies": [
+            "TTR-E00-S01"
+          ],
+          "acceptanceCriteria": [
+            "Sections cover: project intro, build/test, TDD-mandatory loop (verbatim §11.1), clean-architecture rules (§2.1), naming (§11.2 + §14.7), error→exit-code map (§14.3 + §15.1), spec ambiguity protocol (§14.8), phases pointer to .spec/tasks.json, banned dependencies (§12.5), commit format (no co-author tags), pre-push hook + background-validation parallelism (test-runner + lint + clean-architecture-validator + coderabbit).",
+            "All references to spec sections cite numbered §s so future readers can locate the source quickly."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S08",
+          "title": "docs/spec-questions.md with §16.1 Node-vs-Go resolution (SQ-001)",
+          "type": "story",
+          "kind": "docs",
+          "priority": "low",
+          "estimatedHours": 0.5,
+          "files": [
+            "docs/spec-questions.md"
+          ],
+          "required_capabilities": [
+            "docs"
+          ],
+          "dependencies": [],
+          "acceptanceCriteria": [
+            "File exists with the §14.8 protocol header.",
+            "First entry SQ-001 records: §16.1 shows Node skill folder; §2/§12 mandate Go; resolution = Go is authoritative; §16.1 to be patched in a follow-up doc PR (tracked as TTR-E08-S06)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S09",
+          "title": "README.md + LICENSE (MIT) + .gitignore + .gitattributes",
+          "type": "story",
+          "kind": "docs",
+          "priority": "medium",
+          "estimatedHours": 0.5,
+          "files": [
+            "README.md",
+            "LICENSE",
+            ".gitignore",
+            ".gitattributes"
+          ],
+          "required_capabilities": [
+            "docs"
+          ],
+          "dependencies": [],
+          "acceptanceCriteria": [
+            "README links to .spec/corvee-spec.md as the source of truth and to CLAUDE.md for conventions.",
+            "LICENSE is MIT (per §12.7).",
+            ".gitignore covers bin/, dist/, coverage.out, .tasks/index.json, .tasks/locks/, .tasks/operations/, AND .tasks/local.json (per-VM agent identity; see SQ-003).",
+            ".gitattributes pins LF endings on text files."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        },
+        {
+          "id": "TTR-E00-S10",
+          "title": ".spec/tasks.json with all 100 stories enumerated + tasks-validate",
+          "type": "story",
+          "kind": "docs",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            ".spec/tasks.json",
+            "cmd/tasks-validate/main.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "json"
+          ],
+          "dependencies": [
+            "TTR-E00-S01"
+          ],
+          "acceptanceCriteria": [
+            "tasks.json contains all 9 phases (TTR-E00..TTR-E08) with story counts 10/19/13/15/12/8/7/10/6 = 100.",
+            "Every story carries id, title, type, kind, priority, estimatedHours, files, required_capabilities, dependencies, acceptanceCriteria; none of those are empty (acceptanceCriteria has ≥1 entry).",
+            "Every dependency reference resolves to an existing story id within the document.",
+            "Every critical_path entry resolves to an existing story id.",
+            "cmd/tasks-validate/main.go enforces all of the above and is wired into make ci via make tasks-validate."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "TTR-E01",
+      "name": "Phase 1 — Core MVP",
+      "description": "Item domain (struct, validation, status enum), ID parsing/generation, Store interface, fsstore adapter, usecase + cli for init, add, list, show, update, done, delete (soft).",
+      "deliverable": "Single-user backlog: init, add a project/epic/story/subtask, list, show, update, done, soft-delete all work end-to-end. Coverage thresholds active (≥90% domain / ≥85% usecase).",
+      "status": "done",
+      "completed_at": "2026-05-05T08:31:20Z",
+      "tasks": [
+        {
+          "id": "TTR-E01-S01",
+          "title": "domain.Item struct + ItemType/Kind/Priority/Risk/Role enums + tests (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 5,
+          "files": [
+            "internal/domain/item.go",
+            "internal/domain/item_test.go",
+            "internal/domain/types.go",
+            "internal/domain/types_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E00-S05"
+          ],
+          "acceptanceCriteria": [
+            "Item struct exactly matches §14.2 fields and JSON tags.",
+            "Item round-trips through json.Marshal/Unmarshal byte-for-byte using a fixture from §5.",
+            "Required fields (schema_version, id, type, title, status, created_at, updated_at, version) round-trip even when optional fields are absent.",
+            "ItemType, Kind, Priority, Risk, and Role constants match §14.2 exactly; IsValid methods return false for unknown values; table-driven tests cover each enum value plus an unknown-value rejection.",
+            "Combined test coverage for item.go + types.go ≥90% (counts toward domain threshold)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:34:59Z"
+        },
+        {
+          "id": "TTR-E01-S02",
+          "title": "domain.Status enum + transition validation",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/domain/status.go",
+            "internal/domain/status_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S01"
+          ],
+          "acceptanceCriteria": [
+            "Status constants per §14.2: backlog, ready, claimed, in_progress, review, blocked, done, abandoned.",
+            "ValidTransition(from, to Status) returns true only for legal transitions (backlog→ready, ready→claimed, claimed→in_progress|ready, in_progress→review|blocked|done, review→done|in_progress, blocked→ready|in_progress, any→abandoned).",
+            "Table-driven test covers every legal pair plus a sample of illegal pairs.",
+            "Returns ErrInvalidStatus for illegal transitions."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:36:59Z"
+        },
+        {
+          "id": "TTR-E01-S03",
+          "title": "domain.ID parser/generator (per-parent monotonic numbering)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/domain/id.go",
+            "internal/domain/id_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E00-S05"
+          ],
+          "acceptanceCriteria": [
+            "ParseID handles all forms from §4: PROJECT, PROJECT-E01, PROJECT-E01-S03, PROJECT-E01-S03-T02.",
+            "ChildID(parent, n) returns the next free child ID under parent given an iterable of existing siblings.",
+            "ParentOf returns the parent ID or empty string for projects.",
+            "ProjectCode is 3–6 uppercase letters; rejects invalid forms with ErrUsage.",
+            "Includes a property test asserting parse(generate(x))==x for any valid x and parentOf(childId(p,n))==p."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:40:21Z"
+        },
+        {
+          "id": "TTR-E01-S04",
+          "title": "Split config: domain.Workspace (synced) + domain.Local (gitignored) + adapter/config loaders",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/domain/config.go",
+            "internal/domain/config_test.go",
+            "internal/domain/ports.go",
+            "internal/adapter/config/config.go",
+            "internal/adapter/config/config_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S01"
+          ],
+          "acceptanceCriteria": [
+            "Workspace struct (committed at .tasks/workspace.json): schema_version, workspace_name, default_project, claim_ttl_minutes, heartbeat_interval_minutes, critical_path, git.{auto_commit, auto_sync_seconds}. Stable across VMs; safe to git sync.",
+            "Local struct (gitignored at .tasks/local.json): default_agent, agent_role, agent_capabilities. Per-VM, never synced. This split resolves SQ-003 — see docs/spec-questions.md — and intentionally diverges from spec §5.1's single config.json design to avoid the multi-VM merge-conflict trap.",
+            "domain.WorkspaceLoader port (Load/Save) and domain.LocalLoader port (Load/Save) are separate so usecases can request only what they need.",
+            "Env-var overrides per §7.1 / §18: CORVEE_AGENT_ID overrides Local.default_agent; CORVEE_AGENT_ROLE overrides Local.agent_role; CORVEE_AGENT_CAPABILITIES (CSV) overrides Local.agent_capabilities. Resolved in adapter/config.LoadLocalEffective.",
+            "Loading a missing local.json returns sensible defaults (agent_role=human, default_agent=$USER or empty, empty capabilities). Loading a missing workspace.json after task init has run is an integrity error.",
+            "Schema validation rejects unknown fields in either file with ErrSchemaInvalid.",
+            "Tests cover: load/save round-trip for each file, missing-file defaults, invalid-schema rejection, env-var override precedence (env > local.json > built-in default)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:58:42Z"
+        },
+        {
+          "id": "TTR-E01-S05",
+          "title": "JSON Schema (embed.FS) + gojsonschema validator",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/domain/schema.go",
+            "internal/domain/schema/item.schema.json",
+            "internal/domain/schema_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "json-schema"
+          ],
+          "dependencies": [
+            "TTR-E01-S01",
+            "TTR-E01-S02",
+            "TTR-E01-S03"
+          ],
+          "acceptanceCriteria": [
+            "JSON Schema (draft-07) for Item committed under internal/domain/schema/.",
+            "Schema embedded via embed.FS so the binary has no runtime asset deps.",
+            "Validate(item) returns nil for the §5 fixture and ErrSchemaInvalid (wrapped) with field-path detail for mutated invalid versions.",
+            "Forward-version guard: items whose schema_version is GREATER than the binary's CurrentSchemaVersion are rejected with a wrapped ErrSchemaInvalid carrying a clear message (\"item written with schema_version=N; this binary supports up to M; please upgrade the task CLI\"). This prevents the multi-VM poisoning case where Agent A on a newer binary writes schema_version=2 and Agent B on an older binary reads it.",
+            "Tests assert each required field's absence triggers a validation error AND that schema_version > current produces the upgrade-prompt error."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:31:20Z"
+        },
+        {
+          "id": "TTR-E01-S06",
+          "title": "domain.Store port + ListFilter type",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/domain/ports.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S01"
+          ],
+          "acceptanceCriteria": [
+            "Store interface exactly per §14.1: Get, List, Put (with expectVersion), Delete, Exists.",
+            "ListFilter struct exactly per §14.2.",
+            "Godoc on every exported method per CLAUDE.md §5."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:41:38Z"
+        },
+        {
+          "id": "TTR-E01-S07",
+          "title": "testfakes.Store implementing domain.Store (in-memory)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/testfakes/store.go",
+            "internal/usecase/testfakes/store_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S06"
+          ],
+          "acceptanceCriteria": [
+            "FakeStore stores items in a sync.Mutex-protected map.",
+            "Put persists exactly the Item the caller supplied — version, updated_at, and all other fields. The store does NOT mutate Version or UpdatedAt; usecases own time and version intent.",
+            "Put with expectVersion >= 0 compares against the on-disk version and returns ErrVersionConflict on mismatch without writing.",
+            "Get returns ErrNotFound for unknown ids.",
+            "List honors every ListFilter field.",
+            "Self-tests cover every behavior so usecase tests can rely on the fake."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:46:14Z"
+        },
+        {
+          "id": "TTR-E01-S08",
+          "title": "fsstore atomic write (tmp + fsync + rename) (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 5,
+          "files": [
+            "internal/adapter/fsstore/store.go",
+            "internal/adapter/fsstore/store_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "posix"
+          ],
+          "dependencies": [
+            "TTR-E01-S06"
+          ],
+          "acceptanceCriteria": [
+            "Write path: <id>.json.tmp.<pid>.<ts> → fsync → POSIX rename to <id>.json (§6 Layer 1).",
+            "store_test.go covers: write-then-read round-trip; reading a missing item returns ErrNotFound; tmp files left on disk after a simulated crash do not appear under Get/List.",
+            "Filenames use only the canonical id (no path traversal possible)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:53:19Z"
+        },
+        {
+          "id": "TTR-E01-S09",
+          "title": "fsstore version-aware Put with ErrVersionConflict (single-writer)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/adapter/fsstore/store.go",
+            "internal/adapter/fsstore/store_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S08"
+          ],
+          "acceptanceCriteria": [
+            "Put re-reads the on-disk file just before the atomic rename; aborts with ErrVersionConflict if expectVersion >= 0 and the disk version differs from expectVersion. Read+rename ordering plus POSIX rename atomicity is sufficient for the single-writer model Phase 1 targets; cross-process per-item locking arrives in Phase 3 (TTR-E03-S04) when concurrent agents become possible.",
+            "Phase 1's deliverable is single-writer; the docstring and CHANGELOG note this explicitly so users do not assume multi-agent safety yet.",
+            "Put persists the Item the caller supplied verbatim — Version and UpdatedAt are set by the usecase before Put is invoked. fsstore never imports a Clock.",
+            "Tests cover the conflict path, the success path, and the no-expectation path (expectVersion = -1)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T07:55:00Z"
+        },
+        {
+          "id": "TTR-E01-S10",
+          "title": "usecase.Init (bootstrap .tasks/ + workspace.json + local.json + .gitignore)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/init.go",
+            "internal/usecase/init_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S04",
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "Creates .tasks/{items,events,operations,locks,hooks} and writes .tasks/.gitignore excluding index.json, operations/, locks/, AND local.json (§3, §6, SQ-003).",
+            "Writes workspace.json (committed) with workspace_name, default_project (if --project given), claim_ttl_minutes=60, heartbeat_interval_minutes=30, empty critical_path, git defaults.",
+            "Writes local.json (gitignored) with default_agent (from --agent flag, $CORVEE_AGENT_ID env, or $USER), agent_role=human, empty agent_capabilities.",
+            "Idempotent: re-running with the same args is a no-op (preserves existing local.json so the per-VM identity isn't clobbered).",
+            "Returns ErrUsage when run inside an existing workspace unless --force is set."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:05:29Z"
+        },
+        {
+          "id": "TTR-E01-S11",
+          "title": "usecase.Add (id assignment + parent/type validation)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/add.go",
+            "internal/usecase/add_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S03",
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "Validates parent type per §15.2: epic→project, story→epic, subtask→story.",
+            "Computes the next sibling number under the parent and assembles the new ID via ChildID.",
+            "Usecase sets Item.CreatedAt = Item.UpdatedAt = clock.Now() and Item.Version = 1 before calling Store.Put with expectVersion = -1 (new item). The store does not mutate these fields.",
+            "Returns ErrUsage on invalid type/parent combinations and ErrNotFound when parent is absent."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:08:03Z"
+        },
+        {
+          "id": "TTR-E01-S12",
+          "title": "usecase.List (filter application via Store.List)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/list.go",
+            "internal/usecase/list_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "All ListFilter fields from §14.2 are honored.",
+            "Empty filter returns every item.",
+            "Sort and Order flags supported (priority|created_at|updated_at|due_date)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:09:51Z"
+        },
+        {
+          "id": "TTR-E01-S13",
+          "title": "usecase.Show (single item lookup)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 1,
+          "files": [
+            "internal/usecase/show.go",
+            "internal/usecase/show_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "Returns the full item including journal.",
+            "ErrNotFound for unknown ids."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:09:51Z"
+        },
+        {
+          "id": "TTR-E01-S14",
+          "title": "usecase.Update with --expect-version",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/update.go",
+            "internal/usecase/update_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "Mutators per §15.2: status, priority, title, description, due, add-tag, remove-tag, add-impact-file, remove-impact-file, add-dep, remove-dep, add-acceptance, remove-acceptance, risk.",
+            "Status mutations call domain.ValidTransition; illegal transitions return ErrInvalidStatus.",
+            "Usecase sets Item.UpdatedAt = clock.Now() and Item.Version = old.Version + 1 before calling Store.Put. ExpectVersion threads through; conflict returns ErrVersionConflict (no retry — caller decides).",
+            "Returns prev_version and new_version in the output struct."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:11:42Z"
+        },
+        {
+          "id": "TTR-E01-S15",
+          "title": "usecase.Done (status=done, completed_at=now)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/done.go",
+            "internal/usecase/done_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "Usecase sets Item.Status = done, Item.CompletedAt = clock.Now(), Item.UpdatedAt = clock.Now(), Item.Version = old.Version + 1 before calling Store.Put. The store never touches time or version.",
+            "Optional --note appends a journal entry with event=completed (entry timestamp also from the injected clock).",
+            "Lease enforcement deferred to Phase 3; Phase 1 ignores --lease-id."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:12:51Z"
+        },
+        {
+          "id": "TTR-E01-S16",
+          "title": "usecase.Delete (soft only — sets status=abandoned)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/delete.go",
+            "internal/usecase/delete_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "Phase 1 only implements soft-delete (status=abandoned).",
+            "--hard, --cascade, --force flagged as ErrUsage in Phase 1; full impl arrives in Phase 4.",
+            "Refuses if any other item lists this id in dependencies/blocks (returns ErrIntegrityViolated)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:15:35Z"
+        },
+        {
+          "id": "TTR-E01-S17",
+          "title": "cli wiring for init/add/list/show/update/done/delete",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/cli/init.go",
+            "internal/cli/add.go",
+            "internal/cli/list.go",
+            "internal/cli/show.go",
+            "internal/cli/update.go",
+            "internal/cli/done.go",
+            "internal/cli/delete.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "cobra"
+          ],
+          "dependencies": [
+            "TTR-E01-S10",
+            "TTR-E01-S11",
+            "TTR-E01-S12",
+            "TTR-E01-S13",
+            "TTR-E01-S14",
+            "TTR-E01-S15",
+            "TTR-E01-S16"
+          ],
+          "acceptanceCriteria": [
+            "Each verb follows the §14.5 pattern: one file, one new<Verb>Cmd(deps), flags via cmd.Flags(), RunE returning errors that root.go maps to exit codes.",
+            "Output uses printJSON; --pretty/--text honored.",
+            "No business logic in cli/* — only flag parsing and a single usecase call."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:20:43Z"
+        },
+        {
+          "id": "TTR-E01-S18",
+          "title": "cmd/corvee/main.go DI wiring (Store, Clock, IDGen)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "cmd/corvee/main.go",
+            "internal/cli/root.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S08",
+            "TTR-E01-S09",
+            "TTR-E01-S17"
+          ],
+          "acceptanceCriteria": [
+            "main.go wires concrete adapters: fsstore.New for Store, real clock for Clock; IDGen stub returns deterministic strings (real ULID arrives in Phase 3).",
+            "cli.Deps now embeds the usecase.Deps; verbs pull only what they need.",
+            "Workspace auto-discovery walks up from cwd looking for .tasks/ (per §18 recommendation)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:24:38Z"
+        },
+        {
+          "id": "TTR-E01-S19",
+          "title": "Phase 1 E2E: init→add×3→list→show→update→done (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 4,
+          "files": [
+            "test/e2e/phase1_workflow_test.go",
+            "test/fixtures/workspaces/empty/"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S18"
+          ],
+          "acceptanceCriteria": [
+            "Test creates a temp workspace via task init.",
+            "Adds a project, epic, and story; asserts IDs follow §4 (RKN, RKN-E01, RKN-E01-S01).",
+            "Lists with filters, shows by id, updates priority, marks done.",
+            "All output is well-formed JSON; all exit codes are 0.",
+            "make ci is green at this point — coverage thresholds active and met."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T08:28:21Z"
+        }
+      ]
+    },
+    {
+      "id": "TTR-E02",
+      "name": "Phase 2 — Hierarchy & Validation",
+      "description": "tree, validate, reindex, summary, clone; parent/child integrity rules; dependency cycle detection; sharded events log + index cache.",
+      "deliverable": "Full project/epic/story/subtask navigation; dependency validation; fast list via index; sharded audit log persisted.",
+      "status": "done",
+      "completed_at": "2026-05-05T11:31:17Z",
+      "tasks": [
+        {
+          "id": "TTR-E02-S01",
+          "title": "domain.Graph (id→Item, parent→children, id→deps)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/domain/graph.go",
+            "internal/domain/graph_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S01"
+          ],
+          "acceptanceCriteria": [
+            "Graph type with three Maps from §6 (id→Item, parent_id→child_ids, id→dependencies).",
+            "BuildGraph(items []Item) returns a populated Graph in O(N).",
+            "Children(id), Dependencies(id), Dependents(id), Descendants(id) helpers each O(1) lookup."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S02",
+          "title": "Dependency cycle detection + property test",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/domain/graph.go",
+            "internal/domain/graph_test.go",
+            "test/property/graph_property_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S01"
+          ],
+          "acceptanceCriteria": [
+            "DetectCycle(graph) returns ([]string of involved ids, true) on cycles, (nil, false) otherwise.",
+            "Algorithm is iterative DFS with a recursion-stack set.",
+            "Property test (rapid): a generated DAG never has cycles; the same DAG with one inserted back-edge always does."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S03",
+          "title": "Parent/type integrity validator",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/domain/integrity.go",
+            "internal/domain/integrity_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S01"
+          ],
+          "acceptanceCriteria": [
+            "ValidateParentType enforces: project has no parent; epic→project; story→epic; subtask→story.",
+            "ValidateNoOrphans confirms every parent_id resolves.",
+            "ValidateAliasResolution confirms aliases[] do not collide with active ids.",
+            "Returns []IntegrityError listing every violation rather than failing on the first."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S04",
+          "title": "domain.EventLog port + Event type",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/domain/ports.go",
+            "internal/domain/types.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S06"
+          ],
+          "acceptanceCriteria": [
+            "EventLog interface per §14.1: Append, Read, Tail.",
+            "Event struct per §14.2: ts, actor, id, event, from, to, op_id, lease_id, metadata.",
+            "EventFilter per §14.2."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S05",
+          "title": "adapter/eventlog (sharded JSONL append + read)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/adapter/eventlog/log.go",
+            "internal/adapter/eventlog/log_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S04"
+          ],
+          "acceptanceCriteria": [
+            "Daily-sharded files: .tasks/events/<YYYY-MM-DD>.jsonl (§6 Layer 5).",
+            "Append uses O_APPEND with line-atomic writes (one event per line, ≤4KiB).",
+            "Read iterates shards in date order, applies filter, sorts within shard by ts.",
+            "EventFilter.IDPrefix matches both the exact id and descendants (RKN-E01 matches RKN-E01-S03)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S06",
+          "title": "domain.Indexer port + Index type",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/domain/ports.go",
+            "internal/domain/types.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S06"
+          ],
+          "acceptanceCriteria": [
+            "Indexer interface per §14.1: Read, Rebuild, Invalidate.",
+            "Index struct per §14.2 includes BuiltAt, ItemCount, MaxMtime, ByID, ByStatus, ByAssignee, ByParent, Unblocked, DependencyGraph."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S07",
+          "title": "adapter/index — build + read + staleness detection",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/adapter/index/index.go",
+            "internal/adapter/index/index_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S06",
+            "TTR-E02-S05"
+          ],
+          "acceptanceCriteria": [
+            "Builds Index from items/ + events.",
+            "Read compares item_count and max_mtime in header against current items/; rebuilds if stale (§6).",
+            "Index lives at .tasks/index.json and is written atomically (tmp+rename).",
+            "Index.json is gitignored (already in .gitignore)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S08",
+          "title": "usecase.Tree (hierarchical view)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/tree.go",
+            "internal/usecase/tree_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S01",
+            "TTR-E02-S07"
+          ],
+          "acceptanceCriteria": [
+            "Builds a tree from the index; honors --max-depth and --status filters.",
+            "Each node carries its full item plus children: [].",
+            "Empty workspace yields { roots: [] } with exit 0."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:02Z"
+        },
+        {
+          "id": "TTR-E02-S09",
+          "title": "usecase.Validate (workspace integrity check)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/validate.go",
+            "internal/usecase/validate_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S03",
+            "TTR-E02-S02",
+            "TTR-E02-S07"
+          ],
+          "acceptanceCriteria": [
+            "Runs all checks from §15.2: schema per item, parent existence and type, no cycles, no orphaned aliases, index consistency, no orphaned op files (Phase 4), clock skew within tolerance (Phase 3).",
+            "Output lists every error in errors[] but exit 0 even when valid=false."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:03Z"
+        },
+        {
+          "id": "TTR-E02-S10",
+          "title": "usecase.Reindex (rebuild index.json)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/usecase/reindex.go",
+            "internal/usecase/reindex_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S07"
+          ],
+          "acceptanceCriteria": [
+            "Forces Indexer.Rebuild and reports items_indexed, events_replayed, shards_read, was_stale.",
+            "Idempotent: running twice yields was_stale=false the second time."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:03Z"
+        },
+        {
+          "id": "TTR-E02-S11",
+          "title": "usecase.Summary (rollups + critical_path + deliverables)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/summary.go",
+            "internal/usecase/summary_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S07"
+          ],
+          "acceptanceCriteria": [
+            "Output exactly per §15.2: totals, by_<field>, critical_path (with next field), deliverables.",
+            "Group-by --by field: type|status|kind|priority|assignee|project|epic.",
+            "Reads from the index, not from items/, so the call is cheap."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:03Z"
+        },
+        {
+          "id": "TTR-E02-S12",
+          "title": "usecase.Clone (no children variant)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/clone.go",
+            "internal/usecase/clone_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07",
+            "TTR-E01-S03"
+          ],
+          "acceptanceCriteria": [
+            "Clones with fresh ID under original parent (or --to).",
+            "Resets status=backlog, claim=nil, claimed_at=null, completed_at=null, journal=[{created}], version=1.",
+            "Children are not cloned in Phase 2; --with-children returns ErrUsage (handled in Phase 4)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:03Z"
+        },
+        {
+          "id": "TTR-E02-S13",
+          "title": "Phase 2 cli wiring + E2E",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/cli/tree.go",
+            "internal/cli/validate.go",
+            "internal/cli/reindex.go",
+            "internal/cli/summary.go",
+            "internal/cli/clone.go",
+            "test/e2e/phase2_workflow_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S08",
+            "TTR-E02-S09",
+            "TTR-E02-S10",
+            "TTR-E02-S11",
+            "TTR-E02-S12"
+          ],
+          "acceptanceCriteria": [
+            "All five verbs follow the §14.5 cli pattern.",
+            "E2E test creates a multi-level workspace, runs tree/validate/reindex/summary, asserts shapes from §15.2.",
+            "make ci green; coverage thresholds met."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:03Z"
+        }
+      ]
+    },
+    {
+      "id": "TTR-E03",
+      "name": "Phase 3 — Distributed-safe Concurrency",
+      "description": "Lease IDs (ULIDs), claim/release/heartbeat/done with --lease-id, reap, next with capability matching, idempotency via --operation-id, per-item Locker, full concurrency test suite.",
+      "deliverable": "Multiple agents on the same machine can safely share a backlog. v0.3 shippable.",
+      "status": "done",
+      "completed_at": "2026-05-05T11:31:17Z",
+      "tasks": [
+        {
+          "id": "TTR-E03-S01",
+          "title": "adapter/idgen ULID generator + testfakes.SeqIDGen",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/adapter/idgen/ulid.go",
+            "internal/adapter/idgen/ulid_test.go",
+            "internal/usecase/testfakes/idgen.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "ulid"
+          ],
+          "dependencies": [
+            "TTR-E01-S06"
+          ],
+          "acceptanceCriteria": [
+            "Real impl uses oklog/ulid/v2 with a monotonic entropy source.",
+            "FakeIDGen returns IDs from an injected sequence so tests are deterministic.",
+            "Generated ULIDs are sortable and length 26."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S02",
+          "title": "adapter/clock real impl + testfakes.FixedClock",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 1,
+          "files": [
+            "internal/adapter/clock/clock.go",
+            "internal/usecase/testfakes/clock.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S06"
+          ],
+          "acceptanceCriteria": [
+            "Real Now() returns time.Now().UTC().",
+            "FixedClock allows tests to advance time deterministically (Advance(d Duration))."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S03",
+          "title": "domain.Lease validity logic + tests",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/domain/lease.go",
+            "internal/domain/lease_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S01"
+          ],
+          "acceptanceCriteria": [
+            "IsExpired(claim, now, skew) compares now > expires_at + skew.",
+            "Default skew tolerance is 5 minutes per §6 Layer 3.",
+            "MatchesLeaseID(claim, leaseID) — guard for §14.3 ErrLeaseMismatch.",
+            "Tests cover boundary cases including exact-tie equality."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S04",
+          "title": "domain.Locker port + adapter/fsstore O_EXCL impl (cross-process serialization for Phase 3+)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/domain/ports.go",
+            "internal/adapter/fsstore/locker.go",
+            "internal/adapter/fsstore/locker_test.go",
+            "internal/adapter/fsstore/store.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "posix"
+          ],
+          "dependencies": [
+            "TTR-E01-S08",
+            "TTR-E01-S09"
+          ],
+          "acceptanceCriteria": [
+            "Phase 1 shipped single-writer fsstore (TTR-E01-S09). This story adds the per-item lock that makes concurrent writers safe — Locker.Acquire blocks until the lock is obtained or ctx is cancelled (§14.1).",
+            "fsstore impl uses os.OpenFile(path, O_RDWR|O_CREATE|O_EXCL, 0o600) on .tasks/locks/<id>.lock; release deletes the file. Stale locks (older than a configurable threshold) are reaped on acquire attempt.",
+            "Returns ErrLockTimeout per §14.3 when ctx deadlines.",
+            "fsstore.Put is updated to always acquire the per-item lock for the read-modify-write cycle once Phase 3 ships. There is no config toggle; locking is part of the correctness contract for concurrent agents.",
+            "Phase 1's Phase-1-style tests still pass with locking enabled (single-writer path is a degenerate case).",
+            "Platform scope: workspace MUST live on a local POSIX filesystem (linux/{amd64,arm64}, darwin/arm64). NFS, SMB, and other network filesystems are explicitly unsupported because O_EXCL is unreliable on them (well-known kernel races). task validate uses statfs to detect non-local filesystem types and emits an integrity warning when the workspace is hosted on one. Windows is out of scope by §12.7 (build-all does not target it)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S05",
+          "title": "usecase.Claim (atomic + lease ID issuance) (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/claim.go",
+            "internal/usecase/claim_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S01",
+            "TTR-E03-S02",
+            "TTR-E03-S03",
+            "TTR-E03-S04"
+          ],
+          "acceptanceCriteria": [
+            "Acquires per-item lock; reads item; rejects with ErrAlreadyClaimed if claim already set; writes claim object (agent, lease_id from IDGen, claimed_at, expires_at) and status=claimed via Store.Put with expectVersion.",
+            "Returns ClaimOutput{Item, LeaseID} per §14.4.",
+            "Tests cover success path, already-claimed path, status-not-claimable path."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S06",
+          "title": "usecase.Release with --lease-id check",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/release.go",
+            "internal/usecase/release_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S05"
+          ],
+          "acceptanceCriteria": [
+            "Requires --lease-id; ErrLeaseMismatch on mismatch (exit 5).",
+            "Clears claim, reverts status to ready unless explicitly changed."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S07",
+          "title": "usecase.Heartbeat with --lease-id check",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/heartbeat.go",
+            "internal/usecase/heartbeat_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S05"
+          ],
+          "acceptanceCriteria": [
+            "Refreshes expires_at to now+TTL.",
+            "ErrLeaseMismatch on lease ID mismatch.",
+            "Tests assert heartbeat does not change version unnecessarily (only updates expires_at)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S08",
+          "title": "usecase.Done extension with --lease-id check",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/done.go",
+            "internal/usecase/done_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S05",
+            "TTR-E01-S15"
+          ],
+          "acceptanceCriteria": [
+            "When the item is currently claimed, --lease-id is required and validated.",
+            "--force allows stealing the close (logs to events).",
+            "Phase 1 tests still pass (backward compatibility for unclaimed items)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S09",
+          "title": "usecase.Reap (TTL-based release with skew tolerance)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2.5,
+          "files": [
+            "internal/usecase/reap.go",
+            "internal/usecase/reap_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S03"
+          ],
+          "acceptanceCriteria": [
+            "Iterates claimed items; releases those past expires_at + skew (§6 Layer 3).",
+            "Idempotent.",
+            "Reports reaped: [{ id, was_assigned_to, lease_id, expired_at }] per §15.2.",
+            "Auto-invoked inside task next per §6."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S10",
+          "title": "usecase.Next (filters + critical-path bonus + tie-breakers + --auto-claim)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 5,
+          "files": [
+            "internal/usecase/next.go",
+            "internal/usecase/next_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S05",
+            "TTR-E03-S09",
+            "TTR-E02-S01",
+            "TTR-E01-S04"
+          ],
+          "acceptanceCriteria": [
+            "Loads workspace.json via WorkspaceLoader (TTR-E01-S04) for critical_path; loads local.json (with env-var overrides) via LocalLoader for default_agent and agent_capabilities; --match-capabilities filters to items whose required_capabilities ⊆ effective capabilities.",
+            "Selection per §15.2: filter, drop unmet deps, critical-path bonus, sort by priority desc → critical-path order asc → due_date asc → updated_at asc → id asc.",
+            "--max-hours filters by estimated_hours.",
+            "--affinity boosts items where agent appears in past journal actor.",
+            "--auto-claim atomically claims the chosen item; race losers see ErrAlreadyClaimed and re-pick on retry.",
+            "Sort comparator is unit-tested with a permutation matrix that exercises every tie-breaker independently: nil due_date vs set due_date (nils sort last), equal priority forcing critical-path-order resolution, missing critical-path entry, equal updated_at forcing id resolution, and the all-equal case (deterministic id order). The test asserts no panic and a stable, totally-ordered result for ≥50 generated permutations."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:07Z"
+        },
+        {
+          "id": "TTR-E03-S11",
+          "title": "Operation ID idempotency (op-result store + replay)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/domain/ports.go",
+            "internal/adapter/opresult/opresult.go",
+            "internal/adapter/opresult/opresult_test.go",
+            "internal/usecase/idempotency.go",
+            "internal/usecase/idempotency_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S05"
+          ],
+          "acceptanceCriteria": [
+            "domain.OpResultStore port: Get(opID) (raw json, ok, err), Put(opID, payload) error. Adapter persists results at .tasks/operations/results/<op-id>.json (gitignored), atomic write via tmp+rename, max payload size 1 MiB.",
+            "Every mutating verb (add, update, claim, release, heartbeat, done, journal, move, rename, delete, clone, import) wraps its work in WithIdempotency(opID, fn) which: (a) returns the persisted result if Get(opID) succeeds, (b) runs fn and persists fn's result via Put(opID, ...) on success.",
+            "Events.jsonl still records op_id for audit (§6 Layer 7) but is no longer the source of replay payloads — the op-result store is.",
+            "Auto-mints op_id when absent and surfaces it on the response so retries can pass it back.",
+            "TTL: op-result entries older than 24h are pruned by `task compact` (Phase 8); the table notes this so the dir doesn't grow unboundedly.",
+            "Tests cover: first call writes a result and returns it; second call with same op_id returns the persisted result without mutating state; result for a missing op_id returns Get's not-found path."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:08Z"
+        },
+        {
+          "id": "TTR-E03-S12",
+          "title": "store_concurrent_test.go — N-goroutine race tests under -race -count=10 (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 4,
+          "files": [
+            "internal/adapter/fsstore/store_concurrent_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S09",
+            "TTR-E03-S04"
+          ],
+          "acceptanceCriteria": [
+            "N goroutines update the same item; final on-disk version is strictly monotonic.",
+            "No torn JSON observable mid-flight.",
+            "All tests pass with go test -race -count=10."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:08Z"
+        },
+        {
+          "id": "TTR-E03-S13",
+          "title": "claim contention concurrent test (1000 iterations × N goroutines)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/claim_concurrent_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S05"
+          ],
+          "acceptanceCriteria": [
+            "1000 iterations × N goroutines call Claim on the same item; exactly one succeeds per iteration; others receive ErrAlreadyClaimed.",
+            "All under -race -count=10."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:08Z"
+        },
+        {
+          "id": "TTR-E03-S14",
+          "title": "lease validation concurrent test",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/lease_concurrent_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S07"
+          ],
+          "acceptanceCriteria": [
+            "Goroutine A holds a valid lease; goroutine B does heartbeat with a wrong lease ID; B is rejected with ErrLeaseMismatch and A's lease is unchanged."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:08Z"
+        },
+        {
+          "id": "TTR-E03-S15",
+          "title": "Phase 3 cli wiring (claim/release/heartbeat/reap/next) + E2E",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/cli/claim.go",
+            "internal/cli/release.go",
+            "internal/cli/heartbeat.go",
+            "internal/cli/reap.go",
+            "internal/cli/next.go",
+            "test/e2e/phase3_concurrency_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S05",
+            "TTR-E03-S06",
+            "TTR-E03-S07",
+            "TTR-E03-S09",
+            "TTR-E03-S10"
+          ],
+          "acceptanceCriteria": [
+            "E2E spawns 10 child processes calling task next --auto-claim against 5 ready items.",
+            "Exactly 5 succeed (exit 0 with full payload); exactly 5 receive null payload or exit 5.",
+            "make ci green; v0.3 shippable."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-05T11:31:08Z"
+        }
+      ]
+    },
+    {
+      "id": "TTR-E04",
+      "name": "Phase 4 — Multi-file Ops & Recovery",
+      "description": "Operation journal (WAL) for move/rename/delete-cascade/clone-with-children; task recover; task migrate; crash-injection harness.",
+      "deliverable": "Multi-file ops are crash-safe; schema migrations supported.",
+      "status": "done",
+      "completed_at": "2026-05-06T01:11:08Z",
+      "tasks": [
+        {
+          "id": "TTR-E04-S01",
+          "title": "domain.Operation + OpStep types per §14.2",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/domain/types.go",
+            "internal/domain/operation_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S01"
+          ],
+          "acceptanceCriteria": [
+            "Operation struct: op_id, kind, agent, started_at, status, plan ([]OpStep) per §14.2.",
+            "OpStep struct: step (int), kind, args (map[string]any), done (bool).",
+            "JSON round-trip tests."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:04Z"
+        },
+        {
+          "id": "TTR-E04-S02",
+          "title": "domain.OpLog port",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 1,
+          "files": [
+            "internal/domain/ports.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S01"
+          ],
+          "acceptanceCriteria": [
+            "OpLog interface per §14.1: Begin (returns op_id), MarkStep, Complete, Pending."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:04Z"
+        },
+        {
+          "id": "TTR-E04-S03",
+          "title": "adapter/oplog (Begin/MarkStep/Complete/Pending)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/adapter/oplog/oplog.go",
+            "internal/adapter/oplog/oplog_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "posix"
+          ],
+          "dependencies": [
+            "TTR-E04-S02"
+          ],
+          "acceptanceCriteria": [
+            "Operation files at .tasks/operations/<op-id>.json (gitignored).",
+            "Begin writes intent atomically; MarkStep updates done flags; Complete flips status to completed and schedules grace-period deletion.",
+            "Pending returns operations in pending|executing state."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:04Z"
+        },
+        {
+          "id": "TTR-E04-S04",
+          "title": "usecase.Move (cascading new IDs + alias bookkeeping + ref rewriting)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 6,
+          "files": [
+            "internal/usecase/move.go",
+            "internal/usecase/move_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S03",
+            "TTR-E02-S01"
+          ],
+          "acceptanceCriteria": [
+            "Procedure per §8.2: compute new IDs, mv files, update parent_id/project_id, append old IDs to aliases[], scan all items for old IDs in dependencies/blocks and rewrite, append moved event with full mapping, bump version on every touched item.",
+            "Atomic at the workspace level via OpLog: either all changes apply or none do.",
+            "Tests assert mapping correctness on a 3-deep hierarchy."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:04Z"
+        },
+        {
+          "id": "TTR-E04-S05",
+          "title": "usecase.Rename (explicit target ID)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/rename.go",
+            "internal/usecase/rename_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S04"
+          ],
+          "acceptanceCriteria": [
+            "Same machinery as Move but takes an explicit target ID.",
+            "Refuses if target already exists (returns wrapped error → exit 1).",
+            "Cascades to children when their IDs depend on the renamed parent."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        },
+        {
+          "id": "TTR-E04-S06",
+          "title": "usecase.Delete --cascade (with dependent guard)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/delete.go",
+            "internal/usecase/delete_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S03",
+            "TTR-E01-S16"
+          ],
+          "acceptanceCriteria": [
+            "--cascade includes children atomically via OpLog.",
+            "--hard removes the JSON files (git history retains them).",
+            "Refuses without --force when any other item lists this id in dependencies/blocks (ErrIntegrityViolated)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        },
+        {
+          "id": "TTR-E04-S07",
+          "title": "usecase.Clone --with-children",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/clone.go",
+            "internal/usecase/clone_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S03",
+            "TTR-E02-S12"
+          ],
+          "acceptanceCriteria": [
+            "--with-children cascades the clone via OpLog.",
+            "Output includes { root, descendants } per §15.2."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        },
+        {
+          "id": "TTR-E04-S08",
+          "title": "usecase.Recover (roll forward orphaned ops) (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 5,
+          "files": [
+            "internal/usecase/recover.go",
+            "internal/usecase/recover_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S03"
+          ],
+          "acceptanceCriteria": [
+            "Reads OpLog.Pending; for each, resumes from the next undone step (§6 Layer 6).",
+            "Auto-invoked by task list/task next when an in-flight op is detected.",
+            "Failed recovery surfaces in task validate.",
+            "Output: { recovered: [{ op_id, kind, steps_completed, steps_skipped }], failed: [...] }."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        },
+        {
+          "id": "TTR-E04-S09",
+          "title": "usecase.Migrate (schema_version upgrades)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/migrate.go",
+            "internal/usecase/migrate_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S05"
+          ],
+          "acceptanceCriteria": [
+            "Detects items with schema_version < current; applies registered upgraders.",
+            "Idempotent.",
+            "Auto-invoked when task list/task show encounters an old item.",
+            "Items with schema_version > current are reported in skipped[] with reason=\"binary too old\" — they are NOT migrated, NOT downgraded, and NOT silently dropped. This is the symmetric counterpart to the forward-version guard in TTR-E01-S05 and prevents a newer-binary write from poisoning an older-binary workspace.",
+            "Returns { migrated: [{ id, from_version, to_version }], skipped: [{ id, current_version, binary_supports, reason }] }."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        },
+        {
+          "id": "TTR-E04-S10",
+          "title": "Crash-injection test harness (panic mid-step)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/crash_test.go",
+            "internal/adapter/oplog/crash_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S03",
+            "TTR-E04-S08"
+          ],
+          "acceptanceCriteria": [
+            "Test harness panics after writing an intent and after marking each step done.",
+            "Restart + Recover yields a consistent state in every injection point (§11.3 Phase 4 requirement).",
+            "Runs under -race -count=10."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        },
+        {
+          "id": "TTR-E04-S11",
+          "title": "Move/Rename idempotency property test",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "test/property/move_property_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "rapid"
+          ],
+          "dependencies": [
+            "TTR-E04-S04",
+            "TTR-E04-S05"
+          ],
+          "acceptanceCriteria": [
+            "rapid generates random valid hierarchies; move/rename + recover yields the same state regardless of crash injection.",
+            "Aliases preserve old-id resolvability."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        },
+        {
+          "id": "TTR-E04-S12",
+          "title": "Phase 4 cli wiring + E2E with crash recovery",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 3,
+          "files": [
+            "internal/cli/move.go",
+            "internal/cli/rename.go",
+            "internal/cli/recover.go",
+            "internal/cli/migrate.go",
+            "test/e2e/phase4_recovery_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E04-S04",
+            "TTR-E04-S05",
+            "TTR-E04-S08",
+            "TTR-E04-S09"
+          ],
+          "acceptanceCriteria": [
+            "E2E kills the process during task move; restart; task recover rolls forward; task validate reports clean.",
+            "make ci green."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T01:11:05Z"
+        }
+      ]
+    },
+    {
+      "id": "TTR-E05",
+      "name": "Phase 5 — Real-time Observability",
+      "description": "task watch event stream with filtering; structured --metadata JSON on done/journal; relative --since parser.",
+      "deliverable": "Reactive planner agents possible; structured handoff data round-trips. v0.5 shippable.",
+      "status": "done",
+      "completed_at": "2026-05-06T02:49:15Z",
+      "tasks": [
+        {
+          "id": "TTR-E05-S01",
+          "title": "adapter/watch — fsnotify-based event tail",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/adapter/watch/watch.go",
+            "internal/adapter/watch/watch_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "fsnotify"
+          ],
+          "dependencies": [
+            "TTR-E02-S05"
+          ],
+          "acceptanceCriteria": [
+            "Watches the events shard directory; follows the current day's file.",
+            "Rolls into tomorrow's shard at midnight: when the injected Clock crosses the day boundary, the watcher closes the old file handle, opens the new shard, and resumes streaming without dropping any concurrently-appended event.",
+            "Closes the channel on ctx.Done() (§14.1)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        },
+        {
+          "id": "TTR-E05-S02",
+          "title": "domain.EventFilter matcher (multi-flag AND, CSV value OR)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/domain/event_filter.go",
+            "internal/domain/event_filter_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S04"
+          ],
+          "acceptanceCriteria": [
+            "Matches event, actor, id, from, to, op_id with AND between flags and OR within CSV values.",
+            "--id RKN-E01 matches descendants RKN-E01-S03 and RKN-E01-S03-T02.",
+            "Table-driven tests cover every field plus the prefix-id case."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        },
+        {
+          "id": "TTR-E05-S03",
+          "title": "usecase.Watch (filtering + --since + --exit-on)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/watch.go",
+            "internal/usecase/watch_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E05-S01",
+            "TTR-E05-S02"
+          ],
+          "acceptanceCriteria": [
+            "Replays from --since up to live, then streams.",
+            "Exits on --limit or --exit-on event types (§15.2).",
+            "Returns 130 on Ctrl+C (SIGINT)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        },
+        {
+          "id": "TTR-E05-S04",
+          "title": "usecase.Journal extension with --metadata + event types",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/journal.go",
+            "internal/usecase/journal_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S05"
+          ],
+          "acceptanceCriteria": [
+            "--event values: note (default), progress, blocker, decision, handoff (§15.2).",
+            "--metadata accepts arbitrary JSON object (or --metadata-file path).",
+            "--lease-id required when --event ∈ {progress, blocker, decision} and the item is claimed."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        },
+        {
+          "id": "TTR-E05-S05",
+          "title": "usecase.Done extension with --metadata",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 1,
+          "files": [
+            "internal/usecase/done.go",
+            "internal/usecase/done_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S08"
+          ],
+          "acceptanceCriteria": [
+            "--metadata JSON attached to the journal entry.",
+            "Schema is unconstrained per §5; tool stores and surfaces, never validates keys.",
+            "Tests cover --metadata and --metadata-file."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        },
+        {
+          "id": "TTR-E05-S06",
+          "title": "cli/watch with --format jsonl|text|compact",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2.5,
+          "files": [
+            "internal/cli/watch.go",
+            "internal/cli/watch_format.go",
+            "internal/cli/watch_format_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E05-S03"
+          ],
+          "acceptanceCriteria": [
+            "Emits one event per line (no top-level envelope) per §15.2.",
+            "Format conversions covered by table-driven tests."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        },
+        {
+          "id": "TTR-E05-S07",
+          "title": "Watch integration test (cross-goroutine event detection)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/adapter/watch/integration_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E05-S01",
+            "TTR-E05-S03"
+          ],
+          "acceptanceCriteria": [
+            "Goroutine A appends an event; goroutine B running task watch picks it up within a deadline.",
+            "Filter correctness validated end-to-end.",
+            "Midnight-rotation regression test: drives the FixedClock across a day boundary while goroutine A appends events to both the closing shard (just before midnight) and the opening shard (just after); asserts every event is delivered exactly once to the watcher in correct order. Run under -race -count=10 so the fsnotify rename/create race surfaces if it regresses."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        },
+        {
+          "id": "TTR-E05-S08",
+          "title": "--since relative parser (5m, 1h, today, yesterday, ISO timestamp)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "low",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/cli/since.go",
+            "internal/cli/since_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E03-S02"
+          ],
+          "acceptanceCriteria": [
+            "Accepts ISO timestamps (RFC 3339), durations (5m, 1h, 24h), and the literals today/yesterday.",
+            "Returns ErrUsage on unparsable input.",
+            "Table-driven tests cover every accepted form plus invalid samples."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T02:49:04Z"
+        }
+      ]
+    },
+    {
+      "id": "TTR-E06",
+      "name": "Phase 6 — HTML Render & Deploy Handoff",
+      "description": "Static HTML dashboard (board / tree / summary) with default + dark themes, deploy manifest for vercel-skill handoff. Templates and CSS embedded via embed.FS.",
+      "deliverable": "task render writes .tasks/dist/*.html plus manifest.json; HTML diffs match snapshot fixtures byte-for-byte.",
+      "status": "done",
+      "completed_at": "2026-05-06T04:08:24Z",
+      "tasks": [
+        {
+          "id": "TTR-E06-S01",
+          "title": "adapter/render templates (board.html.tmpl + tree.html.tmpl + summary.html.tmpl)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/adapter/render/templates/board.html.tmpl",
+            "internal/adapter/render/templates/tree.html.tmpl",
+            "internal/adapter/render/templates/summary.html.tmpl"
+          ],
+          "required_capabilities": [
+            "go",
+            "html"
+          ],
+          "dependencies": [
+            "TTR-E02-S07"
+          ],
+          "acceptanceCriteria": [
+            "Board: kanban columns by status, cards grouped by epic, color-coded by priority.",
+            "Tree: collapsible project → epic → story → subtask with status pills + completion percentages.",
+            "Summary: per-project progress bars, completion velocity from events, blocked-task callouts, agent activity feed.",
+            "All views read-only and client-rendered with vanilla JS."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T04:08:23Z"
+        },
+        {
+          "id": "TTR-E06-S02",
+          "title": "adapter/render themes (default.css + dark.css)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "internal/adapter/render/themes/default.css",
+            "internal/adapter/render/themes/dark.css"
+          ],
+          "required_capabilities": [
+            "css"
+          ],
+          "dependencies": [],
+          "acceptanceCriteria": [
+            "Two themes cover the §9 visual contract.",
+            "--theme flag selects between them; falls back to default on unknown name."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T04:08:23Z"
+        },
+        {
+          "id": "TTR-E06-S03",
+          "title": "embed.FS for templates + themes",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 1,
+          "files": [
+            "internal/adapter/render/embed.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E06-S01",
+            "TTR-E06-S02"
+          ],
+          "acceptanceCriteria": [
+            "All templates and themes embedded via embed.FS — no runtime asset deps (§12.4).",
+            "Test asserts the embedded FS contains every expected file."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T04:08:24Z"
+        },
+        {
+          "id": "TTR-E06-S04",
+          "title": "usecase.Render orchestrates via domain.Renderer port (no direct file writes)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 5,
+          "files": [
+            "internal/domain/ports.go",
+            "internal/usecase/render.go",
+            "internal/usecase/render_test.go",
+            "internal/adapter/render/renderer.go",
+            "internal/adapter/render/renderer_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E06-S03"
+          ],
+          "acceptanceCriteria": [
+            "domain.Renderer port: Render(ctx, RenderInput{Items, Events, Theme, OutDir}) (RenderOutput{Files, Stats}, error). All file writes (index.html, tree.html, summary.html, assets/styles.css, assets/app.js per §17.2) live in adapter/render — usecase.Render never touches the filesystem.",
+            "usecase.Render only orchestrates: load items via Store, load events via EventLog, validate theme, call Renderer.Render, return its output.",
+            "Reads items + events only; never mutates.",
+            "Returns { out_dir, files, manifest, stats } per §15.2.",
+            "Tests for usecase.Render use a fake Renderer; tests for adapter/render use a t.TempDir() output and assert files appear with expected names + non-empty bodies."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T04:08:24Z"
+        },
+        {
+          "id": "TTR-E06-S05",
+          "title": "manifest.json generator per §17.2",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/render_manifest.go",
+            "internal/usecase/render_manifest_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E06-S04"
+          ],
+          "acceptanceCriteria": [
+            "Manifest contains: name, version (git SHA + ts), generated_at, entrypoint, static, framework, build_command, output_directory, routes (§17.2).",
+            "version falls back to 0.0.0-dev-<ts> when git is unavailable.",
+            "Schema validated by a small Go check."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T04:08:24Z"
+        },
+        {
+          "id": "TTR-E06-S06",
+          "title": "HTML snapshot tests against fixture workspaces",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "test/e2e/render_test.go",
+            "test/fixtures/rendered/board.html",
+            "test/fixtures/rendered/tree.html",
+            "test/fixtures/rendered/summary.html"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E06-S04",
+            "TTR-E06-S05"
+          ],
+          "acceptanceCriteria": [
+            "Render a known fixture workspace; diff each .html against the committed snapshot.",
+            "go test -update regenerates snapshots; CI rejects drift.",
+            "Snapshots are stable across runs (no timestamps embedded in HTML)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T04:08:24Z"
+        },
+        {
+          "id": "TTR-E06-S07",
+          "title": "cli/render with --out and --theme",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 1,
+          "files": [
+            "internal/cli/render.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E06-S04"
+          ],
+          "acceptanceCriteria": [
+            "Default --out is .tasks/dist/.",
+            "--theme name validated against embedded themes; unknown name returns ErrUsage."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T04:08:24Z"
+        }
+      ]
+    },
+    {
+      "id": "TTR-E07",
+      "name": "Phase 7 — Git Sync & Distributed Merge",
+      "description": "task sync, task merge with deterministic claim-conflict resolution (Layer 8), 3-way merge for status/journal/tags, task import and export, auto-sync background loop.",
+      "deliverable": "Cross-machine distribution. Multi-VM ready. v1.0 shippable.",
+      "status": "done",
+      "tasks": [
+        {
+          "id": "TTR-E07-S01",
+          "title": "adapter/git (os/exec wrapper for pull/push/add/commit/mv)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/adapter/git/git.go",
+            "internal/adapter/git/git_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "git"
+          ],
+          "dependencies": [
+            "TTR-E01-S06"
+          ],
+          "acceptanceCriteria": [
+            "Wraps git via os/exec; surface includes Pull --rebase, Push, Add, Commit, Mv, ConflictedFiles.",
+            "Returns structured errors (e.g. ErrConflict) so usecase can branch.",
+            "Tests run against a t.TempDir() git repo (real git binary required)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S02",
+          "title": "usecase.Sync (pull --rebase + push) (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/sync.go",
+            "internal/usecase/sync_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E07-S01"
+          ],
+          "acceptanceCriteria": [
+            "Pulls with --rebase, then pushes.",
+            "On conflict, dispatches to usecase.Merge for per-task resolution.",
+            "Configurable via config.json:git.auto_commit.",
+            "auto_sync_seconds is not consumed by one-shot sync; it is read only by task sync --watch (TTR-E07-S08)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S03",
+          "title": "usecase.Merge with deterministic claim-conflict resolution (lower lease_id wins)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 5,
+          "files": [
+            "internal/usecase/merge.go",
+            "internal/usecase/merge_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E07-S01"
+          ],
+          "acceptanceCriteria": [
+            "Per-task JSON conflicts resolved deterministically.",
+            "Claim conflicts: lower lease_id wins (§6 Layer 8); the loser sees ErrClaimLost on next operation.",
+            "Records claim_lost event in events shard."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S04",
+          "title": "3-way merge for status/journal/tags + prompt for prose fields",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/merge_3way.go",
+            "internal/usecase/merge_3way_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E07-S03"
+          ],
+          "acceptanceCriteria": [
+            "status: latest (max version) wins.",
+            "journal: union by ts+actor+event triple, dedupe.",
+            "tags: union, dedupe.",
+            "description / acceptance_criteria: surface for human review (writes a .conflict file)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S05",
+          "title": "usecase.Import (native + phases-and-tasks formats)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 5,
+          "files": [
+            "internal/usecase/import.go",
+            "internal/usecase/import_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S11",
+            "TTR-E04-S03"
+          ],
+          "acceptanceCriteria": [
+            "Both formats per §15.2: native (array of full items) and phases-and-tasks (AgentForge-style).",
+            "Phases-and-tasks accepts the §15.2 minimum field set (id, title, description, type, priority, estimatedHours, files, acceptanceCriteria) AND the §5 native Item fields used by the dogfood tracker (kind, required_capabilities, dependencies, status, completed_at). Each maps directly to its Item counterpart when the task becomes a story; no field outside §5 is permitted.",
+            "Top-level critical_path on the import doc populates config.json:critical_path on the target workspace (§5.1).",
+            "--dry-run validates and reports without writing.",
+            "Atomic via OpLog: nothing written if any item invalid (returns ErrSchemaInvalid).",
+            "Self-test: imports .spec/tasks.json (the dogfood case) into a temp workspace and asserts 100 stories appear with their status, completed_at, dependencies, and required_capabilities preserved."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S06",
+          "title": "usecase.ExportPlan (native, phases, markdown formats)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/exportplan.go",
+            "internal/usecase/exportplan_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "Three formats per §15.2: native, phases, markdown.",
+            "--out writes to a path; default stdout.",
+            "Round-trip self-test: import → export native → import yields the same item set."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S07",
+          "title": "usecase.Export (graph / cypher / dot)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "low",
+          "estimatedHours": 3,
+          "files": [
+            "internal/usecase/export.go",
+            "internal/usecase/export_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E01-S07"
+          ],
+          "acceptanceCriteria": [
+            "graph: JSON Graph Format (nodes + edges with metadata).",
+            "cypher: Neo4j load script.",
+            "dot: Graphviz.",
+            "--include filters edge types: parent, dependency, blocks, alias."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S08",
+          "title": "task sync --watch (explicit long-running sync loop)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 3,
+          "files": [
+            "internal/cli/sync.go",
+            "internal/cli/sync_test.go",
+            "internal/usecase/sync.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E07-S02"
+          ],
+          "acceptanceCriteria": [
+            "task sync without --watch is a one-shot pull/push and exits (default behavior already from TTR-E07-S02).",
+            "task sync --watch is an explicit long-running command that loops every config.json:git.auto_sync_seconds (or the --interval override) until ctx is cancelled (Ctrl+C). Exits 0 on clean shutdown, 130 on SIGINT.",
+            "Rejected as ErrUsage if config.json:git.auto_sync_seconds is null AND --interval is not given.",
+            "Tested via context cancellation: the loop exits cleanly within one tick of cancellation.",
+            "Avoids the conceptual flaw of trying to run a background goroutine inside a one-shot CLI invocation that would otherwise exit immediately."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S09",
+          "title": "Two-repo + bare middle E2E (planner-executor) (CRITICAL PATH)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "critical",
+          "estimatedHours": 5,
+          "files": [
+            "test/e2e/git_sync_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "git"
+          ],
+          "dependencies": [
+            "TTR-E07-S02",
+            "TTR-E07-S05"
+          ],
+          "acceptanceCriteria": [
+            "Two temp repos pointed at a third bare repo.",
+            "Planner imports 20 tasks; pushes.",
+            "Executor pulls; claims, completes 20 items.",
+            "Planner pulls and sees 20 done.",
+            "make ci green; v1.0 cut."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E07-S10",
+          "title": "Distributed claim-conflict E2E (lower lease_id wins)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "high",
+          "estimatedHours": 4,
+          "files": [
+            "test/e2e/conflict_resolution_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "git"
+          ],
+          "dependencies": [
+            "TTR-E07-S03"
+          ],
+          "acceptanceCriteria": [
+            "Two executors claim the same item from divergent branches; sync triggers merge.",
+            "Lower lease_id wins; loser sees claim_lost: true on next operation.",
+            "Both repos reach identical state after final sync."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        }
+      ],
+      "completed_at": "2026-05-06T00:00:00Z"
+    },
+    {
+      "id": "TTR-E08",
+      "name": "Phase 8 — Plugins, Hooks, Compaction, SKILL.md",
+      "description": "Plugin protocol via os/exec + JSON over stdio; shell hooks; agent_safe enforcement; task compact; SKILL.md and references/ docs.",
+      "deliverable": "Extensibility surfaces live; v1.x maintenance command shipped; skill is publishable.",
+      "status": "done",
+      "tasks": [
+        {
+          "id": "TTR-E08-S01",
+          "title": "Plugin protocol (external binary + JSON over stdin/stdout)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/hooks.go",
+            "internal/usecase/hooks_test.go",
+            "docs/plugin-protocol.md"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E07-S02"
+          ],
+          "acceptanceCriteria": [
+            "Plugins are external binaries under plugins/<name>/; CLI invokes via os/exec, sends event JSON on stdin, reads JSON on stdout.",
+            "Errors from plugins are logged but don't fail core operations unless the plugin returns a 'veto' field.",
+            "Sample plugin in docs/plugin-protocol.md shows a Python-based auto-tagger."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E08-S02",
+          "title": "Plugin discovery (plugins/ directory)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/usecase/plugin_discovery.go",
+            "internal/usecase/plugin_discovery_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E08-S01"
+          ],
+          "acceptanceCriteria": [
+            "Walks plugins/<name>/plugin.json on startup; registers handlers per declared event type.",
+            "Malformed plugin.json is logged and skipped (does not break the CLI)."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E08-S03",
+          "title": "Shell hook emission (.tasks/hooks/*.sh)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 2,
+          "files": [
+            "internal/usecase/shell_hooks.go",
+            "internal/usecase/shell_hooks_test.go"
+          ],
+          "required_capabilities": [
+            "go",
+            "bash"
+          ],
+          "dependencies": [
+            "TTR-E02-S05"
+          ],
+          "acceptanceCriteria": [
+            "On each lifecycle event, run the matching shell script under .tasks/hooks/ if executable.",
+            "Event JSON piped on stdin; non-zero exit logged but ignored.",
+            "Sample on-status-change.sh in test fixtures."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:58Z"
+        },
+        {
+          "id": "TTR-E08-S04",
+          "title": "agent_safe enforcement under CORVEE_AGENT_MODE",
+          "type": "story",
+          "kind": "feature",
+          "priority": "medium",
+          "estimatedHours": 1.5,
+          "files": [
+            "internal/usecase/hooks.go",
+            "internal/usecase/hooks_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E08-S01"
+          ],
+          "acceptanceCriteria": [
+            "CORVEE_AGENT_MODE=1 or --agent flag triggers agent-safe filtering (§10).",
+            "Plugins without agent_safe: true are skipped silently in agent mode.",
+            "Tests cover both modes."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:59Z"
+        },
+        {
+          "id": "TTR-E08-S05",
+          "title": "usecase.Compact (squash events, archive shards, prune ops, gc aliases)",
+          "type": "story",
+          "kind": "feature",
+          "priority": "low",
+          "estimatedHours": 4,
+          "files": [
+            "internal/usecase/compact.go",
+            "internal/usecase/compact_test.go"
+          ],
+          "required_capabilities": [
+            "go"
+          ],
+          "dependencies": [
+            "TTR-E02-S05",
+            "TTR-E04-S03"
+          ],
+          "acceptanceCriteria": [
+            "Default cutoff: 90 days.",
+            "Squashes events into item state; archives or deletes old daily shards; prunes resolved op files; gc's stale aliases.",
+            "Idempotent.",
+            "Returns { shards_archived, ops_pruned, aliases_pruned, bytes_saved } per §15.2."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:59Z"
+        },
+        {
+          "id": "TTR-E08-S06",
+          "title": "SKILL.md + references/ (workflows, schema, error-codes, topologies, handoff-patterns) + §16.1 patch",
+          "type": "story",
+          "kind": "docs",
+          "priority": "high",
+          "estimatedHours": 6,
+          "files": [
+            "SKILL.md",
+            "references/workflows.md",
+            "references/schema.md",
+            "references/error-codes.md",
+            "references/topologies.md",
+            "references/handoff-patterns.md",
+            ".spec/corvee-spec.md"
+          ],
+          "required_capabilities": [
+            "docs"
+          ],
+          "dependencies": [
+            "TTR-E07-S09",
+            "TTR-E08-S05"
+          ],
+          "acceptanceCriteria": [
+            "SKILL.md frontmatter exactly per §16.2; body sections per §16.3.",
+            "Five reference files cover §16.4 contents.",
+            "Spec §16.1 patched from Node-based to Go-based skill folder layout (resolves SQ-001 in docs/spec-questions.md).",
+            "Skill is publishable as a release asset."
+          ],
+          "status": "done",
+          "completed_at": "2026-05-06T06:17:59Z"
+        }
+      ],
+      "completed_at": "2026-05-06T00:00:00Z"
+    }
+  ]
+}

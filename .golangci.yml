@@ -1,0 +1,157 @@
+# golangci-lint config (target version: v2.x).
+# Keeps the codebase honest: clean-architecture layering enforced via
+# depguard, godoc on exported identifiers via revive, plus the standard
+# correctness suite.
+
+version: "2"
+
+run:
+  timeout: 5m
+  go: "1.26"
+  tests: true
+
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - revive
+    - unused
+    - gosec
+    - nilerr
+    - exhaustive
+    - depguard
+    - ineffassign
+    - misspell
+    - unconvert
+    - prealloc
+    - bodyclose
+
+  exclusions:
+    paths:
+      - bin
+      - dist
+      - \.tasks
+    rules:
+      # Tests can use t.TempDir() and tend to have less strict err checks.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gosec
+      # doc.go files are package-level documentation only.
+      - path: doc\.go
+        linters:
+          - revive
+      # File-based storage opens files via computed paths by design.
+      - linters:
+          - gosec
+        text: "G304"
+      # Directory creation in storage adapters; 0755 is intentional.
+      - linters:
+          - gosec
+        text: "G301"
+      # fmt.Fprintf/Fprintln to writers: ignoring write errors is acceptable.
+      - linters:
+          - errcheck
+        text: "fmt\\.F"
+      # staticcheck QF suggestions are informational only.
+      - linters:
+          - staticcheck
+        text: "^QF"
+      # math/rand is fine for property-based test seeds; not security-sensitive.
+      - path: test/property/
+        linters:
+          - gosec
+      # subprocess in e2e test harness is intentional.
+      - path: test/e2e/
+        linters:
+          - gosec
+
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
+
+    revive:
+      rules:
+        - name: exported
+          severity: warning
+          arguments:
+            - "checkPrivateReceivers"
+            - "disableStutteringCheck"
+        - name: var-naming
+        - name: errorf
+        - name: error-return
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: indent-error-flow
+        - name: empty-block
+        - name: superfluous-else
+        - name: unreachable-code
+        - name: redefines-builtin-id
+
+    exhaustive:
+      default-signifies-exhaustive: true
+
+    depguard:
+      rules:
+        # Clean-architecture dependency rule (spec §2.1):
+        # domain imports nothing from this codebase.
+        domain:
+          list-mode: lax
+          files:
+            - "**/internal/domain/**/*.go"
+          deny:
+            - pkg: github.com/mandarnilange/corvee/internal/usecase
+              desc: "domain must not depend on usecase (clean architecture)"
+            - pkg: github.com/mandarnilange/corvee/internal/adapter
+              desc: "domain must not depend on adapter (clean architecture)"
+            - pkg: github.com/mandarnilange/corvee/internal/cli
+              desc: "domain must not depend on cli (clean architecture)"
+        # usecase imports only domain, never adapter or cli.
+        usecase:
+          list-mode: lax
+          files:
+            - "**/internal/usecase/**/*.go"
+          deny:
+            - pkg: github.com/mandarnilange/corvee/internal/adapter
+              desc: "usecase must not depend on adapter (clean architecture)"
+            - pkg: github.com/mandarnilange/corvee/internal/cli
+              desc: "usecase must not depend on cli (clean architecture)"
+        # adapter implements domain ports; never imports usecase or cli.
+        adapter:
+          list-mode: lax
+          files:
+            - "**/internal/adapter/**/*.go"
+          deny:
+            - pkg: github.com/mandarnilange/corvee/internal/usecase
+              desc: "adapter must not depend on usecase (clean architecture)"
+            - pkg: github.com/mandarnilange/corvee/internal/cli
+              desc: "adapter must not depend on cli (clean architecture)"
+        # Banned dependencies (spec §12.5).
+        banned:
+          list-mode: lax
+          files:
+            - "$all"
+          deny:
+            - pkg: github.com/sirupsen/logrus
+              desc: "use stdlib log/slog (spec §12.5)"
+            - pkg: go.uber.org/zap
+              desc: "use stdlib log/slog (spec §12.5)"
+            - pkg: github.com/stretchr/testify
+              desc: "use stdlib testing (spec §12.5)"
+            - pkg: github.com/onsi/ginkgo
+              desc: "use stdlib testing (spec §12.5)"
+            - pkg: gopkg.in/yaml.v2
+              desc: "config and data are JSON-only (spec §12.5)"
+            - pkg: gopkg.in/yaml.v3
+              desc: "config and data are JSON-only (spec §12.5)"

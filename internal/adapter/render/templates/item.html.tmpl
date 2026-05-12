@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{.Theme}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Item.ID}} — {{.Item.Title}} — {{.WorkspaceName}}</title>
+<link rel="stylesheet" href="{{.RootPath}}assets/styles.css">
+</head>
+<body class="view-item">
+{{template "header" .}}
+<main>
+{{template "item-panel" .Item}}
+</main>
+<footer class="foot"><span>static dashboard rendered by <span class="mono">corvee render</span></span></footer>
+<script src="{{.RootPath}}assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+{"event_id":"01KQYSH0W77TG4J0MA56RJ6T0X","ts":"2026-05-06T14:02:04.034521Z","type":"item_added","item_id":"TTR-E08-S07","actor":"mandar","actor_role":"human"}
+{"event_id":"01KQZ10CW7JG95EVN98B43EDY6","ts":"2026-05-06T16:12:47.872619Z","type":"item_added","item_id":"TTR-E08-S08","actor":"mandar","actor_role":"human"}
+{"event_id":"01KQZ10CWFP8X63SEARBDAQBNG","ts":"2026-05-06T16:12:47.872619Z","type":"auto_reopened","item_id":"TTR-E08","actor":"mandar","actor_role":"human"}
+{"event_id":"01KQZ10V7NTBQ05VAKMRHC4JTW","ts":"2026-05-06T16:13:02.569446Z","type":"deleted_cascade","item_id":"TTR-E08-S08","actor":"mandar","operation_id":"01KQZ10V79VA7T4CF4SCZ0PC9Z","metadata":{"deleted_ids":["TTR-E08-S08"],"hard":true}}

@@ -1,0 +1,175 @@
+name: CI
+
+# Per-gate jobs so a failure in one (e.g. coverage) leaves the others
+# clearly green. Each job pulls cached modules and tools.
+#
+# Security note: this workflow consumes only repository contents and
+# event metadata (commit SHA, ref). It never interpolates untrusted
+# input (issue titles, PR bodies, commit messages) into run: commands.
+# All shell steps invoke Makefile targets; the SHA injected into the
+# version stamp goes through an explicit env var.
+
+on:
+  push:
+    # Only main + tags. Feature branches with an open PR are covered
+    # by the pull_request trigger below; without this scoping, every
+    # push to a PR branch produced two workflow runs (push + PR) and
+    # 2x the CI minutes.
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same branch so a rapid-fire sequence
+# of pushes doesn't queue up duplicate work. The merged commit on
+# main still runs to completion (different ref).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: "1.26"
+
+jobs:
+  lint:
+    name: Lint (gofmt + vet + golangci-lint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Install golangci-lint
+        run: make install-tools
+      - run: make lint
+
+  build:
+    name: Build (${{ matrix.goos }}/${{ matrix.goarch }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: arm64
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Build
+        run: |
+          mkdir -p bin
+          go build -ldflags "-X github.com/mandarnilange/corvee/internal/domain.Version=$COMMIT_SHA" \
+            -o "bin/corvee-${GOOS}-${GOARCH}" \
+            ./cmd/corvee
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: corvee-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: bin/corvee-${{ matrix.goos }}-${{ matrix.goarch }}
+          if-no-files-found: error
+
+  test-unit:
+    name: Test (unit, fast)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - run: make test-unit
+
+  test-race:
+    name: Test (-race, count=10)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - run: make test-race
+
+  test-e2e:
+    name: Test (E2E, real binary)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Configure git
+        run: |
+          git config --global user.email "ci@example.com"
+          git config --global user.name  "ci"
+          git config --global init.defaultBranch main
+      - run: make test-e2e
+
+  test-coverage:
+    name: Test (coverage thresholds)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - run: make test-coverage
+      - name: Upload coverage profile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
+          if-no-files-found: ignore
+
+  tasks-validate:
+    name: Tasks JSON validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - run: make tasks-validate
+
+  dogfood:
+    name: Dogfood (.spec/tasks.json import roundtrip)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Configure git
+        run: |
+          git config --global user.email "ci@example.com"
+          git config --global user.name  "ci"
+          git config --global init.defaultBranch main
+      - run: make dogfood

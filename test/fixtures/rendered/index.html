@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rkn — Board</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-board">
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">c</span>
+    <h1>rkn</h1>
+  </div>
+  <nav class="views">
+    <a href="index.html" class="active">Board</a>
+    <a href="tree.html" class="">Tree</a>
+    <a href="summary.html" class="">Summary</a>
+  </nav>
+  <div class="topbar-spacer"></div>
+  <button type="button" class="icon-btn" data-theme-toggle data-theme-mode="auto" aria-label="Toggle theme (auto / light / dark)" title="Toggle theme (auto / light / dark)">
+    <svg class="icon-auto"  viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 2v10a5 5 0 0 1 0-10z"/></svg>
+    <svg class="icon-light" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 4.5A3.5 3.5 0 1 1 4.5 8 3.5 3.5 0 0 1 8 4.5zM7.5 0h1v2h-1zm0 14h1v2h-1zM0 7.5h2v1H0zm14 0h2v1h-2zM2.4 2.4l.7.7L4.5 4.5l-.7-.7zm9.1 9.1.7.7 1.4 1.4-.7.7zm-9.1 1.4.7-.7L4.5 11.5l-.7.7zM11.5 4.5l.7-.7L13.6 2.4l-.7-.7z"/></svg>
+    <svg class="icon-dark"  viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M6 1.5A6.5 6.5 0 1 0 14.5 10 5.5 5.5 0 0 1 6 1.5z"/></svg>
+  </button>
+</header>
+
+<main>
+  <section class="filterbar" aria-label="Filters">
+    <input type="search" class="search" placeholder="Search title, id, description…" data-filter-search aria-label="Search items">
+    
+    <div class="chip-group" data-filter-group="status">
+      <span class="chip-group-label">Status</span>
+      <button type="button" class="chip" data-filter-value="backlog">Backlog <span class="chip-count">3</span></button><button type="button" class="chip" data-filter-value="blocked">Blocked <span class="chip-count">1</span></button>
+    </div>
+    
+    
+    <div class="chip-group" data-filter-group="priority">
+      <span class="chip-group-label">Priority</span>
+      <button type="button" class="chip" data-filter-value="high">high <span class="chip-count">3</span></button><button type="button" class="chip" data-filter-value="medium">medium <span class="chip-count">1</span></button>
+    </div>
+    
+    
+    
+    <div class="chip-group" data-filter-group="assignee">
+      <span class="chip-group-label">Assignee</span>
+      <button type="button" class="chip" data-filter-value="alice">@alice <span class="chip-count">1</span></button>
+    </div>
+    
+    <label class="toggle"><input type="checkbox" data-filter-toggle="show-abandoned"> Show abandoned</label>
+    <button type="button" class="link-btn" data-filter-reset>Reset</button>
+  </section>
+
+  <section class="board">
+    
+    <div class="column" data-status="backlog">
+      <h2>Backlog <span class="count" data-column-count>3</span></h2>
+      <div class="cards">
+        
+        <div class="epic-group" data-epic="">
+          
+          
+          <a class="card priority-high" data-id="RKN" data-status="backlog" data-priority="high" data-kind="none" data-assignee="none" data-epic="" data-project="RKN" data-search="rkn project rikonect    high" href="items/RKN.html">
+            <header>
+              <span class="id">RKN</span>
+              <span class="pill priority-high">high</span>
+              
+              
+              
+            </header>
+            <h3>Project Rikonect</h3>
+            
+            <div class="meta-row">
+              
+              
+              
+              
+              
+              
+              
+            </div>
+            
+          </a>
+          
+        </div>
+        
+        <div class="epic-group" data-epic="RKN">
+          
+          <div class="epic-header"><span class="id">RKN</span><span>Project Rikonect</span></div>
+          
+          
+          <a class="card priority-high" data-id="RKN-E01" data-status="backlog" data-priority="high" data-kind="none" data-assignee="none" data-epic="RKN" data-project="RKN" data-search="rkn-e01 first epic    high" href="items/RKN-E01.html">
+            <header>
+              <span class="id">RKN-E01</span>
+              <span class="pill priority-high">high</span>
+              
+              <span class="pill type">epic</span>
+              <span class="breadcrumb">RKN</span>
+            </header>
+            <h3>First epic</h3>
+            
+            <div class="meta-row">
+              
+              
+              
+              
+              
+              
+              
+            </div>
+            
+          </a>
+          
+        </div>
+        
+        <div class="epic-group" data-epic="RKN-E01">
+          
+          <div class="epic-header"><span class="id">RKN-E01</span><span>First epic</span></div>
+          
+          
+          <a class="card priority-medium" data-id="RKN-E01-S01" data-status="backlog" data-priority="medium" data-kind="none" data-assignee="none" data-epic="RKN-E01" data-project="RKN" data-search="rkn-e01-s01 story one    medium" href="items/RKN-E01-S01.html">
+            <header>
+              <span class="id">RKN-E01-S01</span>
+              <span class="pill priority-medium">medium</span>
+              
+              <span class="pill type">story</span>
+              <span class="breadcrumb">RKN / RKN-E01</span>
+            </header>
+            <h3>Story one</h3>
+            
+            <div class="meta-row">
+              
+              
+              
+              
+              
+              
+              
+            </div>
+            
+          </a>
+          
+        </div>
+        
+      </div>
+    </div>
+    
+    <div class="column" data-status="ready">
+      <h2>Ready <span class="count" data-column-count>0</span></h2>
+      <div class="cards">
+        
+        <div class="empty">no items</div>
+        
+      </div>
+    </div>
+    
+    <div class="column" data-status="claimed">
+      <h2>Claimed <span class="count" data-column-count>0</span></h2>
+      <div class="cards">
+        
+        <div class="empty">no items</div>
+        
+      </div>
+    </div>
+    
+    <div class="column" data-status="in_progress">
+      <h2>In Progress <span class="count" data-column-count>0</span></h2>
+      <div class="cards">
+        
+        <div class="empty">no items</div>
+        
+      </div>
+    </div>
+    
+    <div class="column" data-status="review">
+      <h2>Review <span class="count" data-column-count>0</span></h2>
+      <div class="cards">
+        
+        <div class="empty">no items</div>
+        
+      </div>
+    </div>
+    
+    <div class="column" data-status="blocked">
+      <h2>Blocked <span class="count" data-column-count>1</span></h2>
+      <div class="cards">
+        
+        <div class="epic-group" data-epic="RKN-E01">
+          
+          <div class="epic-header"><span class="id">RKN-E01</span><span>First epic</span></div>
+          
+          
+          <a class="card priority-high" data-id="RKN-E01-S02" data-status="blocked" data-priority="high" data-kind="none" data-assignee="alice" data-epic="RKN-E01" data-project="RKN" data-search="rkn-e01-s02 story two    high" href="items/RKN-E01-S02.html">
+            <header>
+              <span class="id">RKN-E01-S02</span>
+              <span class="pill priority-high">high</span>
+              
+              <span class="pill type">story</span>
+              <span class="breadcrumb">RKN / RKN-E01</span>
+            </header>
+            <h3>Story two</h3>
+            
+            <div class="meta-row">
+              <span class="assignee">@alice</span>
+              
+              
+              
+              
+              
+              
+            </div>
+            
+          </a>
+          
+        </div>
+        
+      </div>
+    </div>
+    
+    <div class="column" data-status="done">
+      <h2>Done <span class="count" data-column-count>0</span></h2>
+      <div class="cards">
+        
+        <div class="empty">no items</div>
+        
+      </div>
+    </div>
+    
+    <div class="column" data-status="abandoned">
+      <h2>Abandoned <span class="count" data-column-count>0</span></h2>
+      <div class="cards">
+        
+        <div class="empty">no items</div>
+        
+      </div>
+    </div>
+    
+  </section>
+
+  <p class="filter-empty" data-filter-empty hidden>No items match the current filters.</p>
+</main>
+
+
+<div class="drawer-backdrop" data-drawer-backdrop hidden></div>
+<aside class="drawer" data-drawer hidden aria-label="Item details">
+  <header class="drawer-head">
+    <a class="drawer-permalink" data-drawer-permalink href="#" title="Open standalone detail page in a new tab" rel="noopener" target="_blank">↗ open</a>
+    <button class="icon-btn" data-drawer-close type="button" aria-label="Close details">✕</button>
+  </header>
+  <div class="drawer-body" data-drawer-body>
+    <p class="empty">Click any item to see details here.</p>
+  </div>
+</aside>
+
+
+<div class="item-template-store" hidden aria-hidden="true">
+
+<template id="item-RKN" data-permalink="items/RKN.html">
+<div class="item-detail">
+  <div class="header-block">
+    <div class="breadcrumb-row">
+      
+        
+        <span class="current">RKN</span>
+      
+    </div>
+    <h2 class="title">Project Rikonect</h2>
+    <div class="header-meta">
+      <span class="pill type">project</span>
+      <span class="pill status-backlog">backlog</span>
+      <span class="pill priority-high">high</span>
+      
+      
+      
+    </div>
+  </div>
+
+  <div class="body-grid">
+    <div>
+      <section class="section">
+        <h3>Description</h3>
+        
+        <div class="empty-section">No description.</div>
+        
+      </section>
+
+      
+
+      
+
+      
+
+      
+      <section class="section">
+        <h3>Children</h3>
+        <div class="blocks-list">
+          
+          <div class="dep-row">
+            <a href="items/RKN-E01.html" data-item-link="RKN-E01">RKN-E01</a>
+            <span class="dep-title">First epic</span>
+            <span class="pill status-backlog dep-status">backlog</span>
+          </div>
+          
+        </div>
+      </section>
+      
+
+      
+    </div>
+
+    <aside>
+      <section class="section">
+        <h3>Details</h3>
+        <table class="kv-table">
+          <tr><td class="k">ID</td><td class="v"><code>RKN</code></td></tr>
+          <tr><td class="k">Type</td><td class="v">project</td></tr>
+          
+          <tr><td class="k">Priority</td><td class="v">high</td></tr>
+          <tr><td class="k">Status</td><td class="v">backlog</td></tr>
+          <tr><td class="k">Project</td><td class="v"><a href="items/RKN.html" data-item-link="RKN">RKN</a></td></tr>
+          
+          
+          
+          
+          
+          
+          
+          
+          <tr><td class="k">Created by</td><td class="v">@alice · <TS></td></tr>
+          <tr><td class="k">Updated</td><td class="v"><TS></td></tr>
+          <tr><td class="k">Version</td><td class="v">1</td></tr>
+          
+        </table>
+      </section>
+
+      
+    </aside>
+  </div>
+</div>
+</template>
+
+<template id="item-RKN-E01" data-permalink="items/RKN-E01.html">
+<div class="item-detail">
+  <div class="header-block">
+    <div class="breadcrumb-row">
+      
+        
+        <a href="items/RKN.html" data-item-link="RKN">RKN</a>
+      
+        <span class="sep">/</span>
+        <span class="current">RKN-E01</span>
+      
+    </div>
+    <h2 class="title">First epic</h2>
+    <div class="header-meta">
+      <span class="pill type">epic</span>
+      <span class="pill status-backlog">backlog</span>
+      <span class="pill priority-high">high</span>
+      
+      
+      
+    </div>
+  </div>
+
+  <div class="body-grid">
+    <div>
+      <section class="section">
+        <h3>Description</h3>
+        
+        <div class="empty-section">No description.</div>
+        
+      </section>
+
+      
+
+      
+
+      
+
+      
+      <section class="section">
+        <h3>Children</h3>
+        <div class="blocks-list">
+          
+          <div class="dep-row">
+            <a href="items/RKN-E01-S01.html" data-item-link="RKN-E01-S01">RKN-E01-S01</a>
+            <span class="dep-title">Story one</span>
+            <span class="pill status-backlog dep-status">backlog</span>
+          </div>
+          
+          <div class="dep-row">
+            <a href="items/RKN-E01-S02.html" data-item-link="RKN-E01-S02">RKN-E01-S02</a>
+            <span class="dep-title">Story two</span>
+            <span class="pill status-blocked dep-status">blocked</span>
+          </div>
+          
+        </div>
+      </section>
+      
+
+      
+    </div>
+
+    <aside>
+      <section class="section">
+        <h3>Details</h3>
+        <table class="kv-table">
+          <tr><td class="k">ID</td><td class="v"><code>RKN-E01</code></td></tr>
+          <tr><td class="k">Type</td><td class="v">epic</td></tr>
+          
+          <tr><td class="k">Priority</td><td class="v">high</td></tr>
+          <tr><td class="k">Status</td><td class="v">backlog</td></tr>
+          <tr><td class="k">Project</td><td class="v"><a href="items/RKN.html" data-item-link="RKN">RKN</a></td></tr>
+          <tr><td class="k">Parent</td><td class="v"><a href="items/RKN.html" data-item-link="RKN">RKN</a></td></tr>
+          
+          
+          
+          
+          
+          
+          
+          <tr><td class="k">Created by</td><td class="v">@alice · <TS></td></tr>
+          <tr><td class="k">Updated</td><td class="v"><TS></td></tr>
+          <tr><td class="k">Version</td><td class="v">1</td></tr>
+          
+        </table>
+      </section>
+
+      
+    </aside>
+  </div>
+</div>
+</template>
+
+<template id="item-RKN-E01-S01" data-permalink="items/RKN-E01-S01.html">
+<div class="item-detail">
+  <div class="header-block">
+    <div class="breadcrumb-row">
+      
+        
+        <a href="items/RKN.html" data-item-link="RKN">RKN</a>
+      
+        <span class="sep">/</span>
+        <a href="items/RKN-E01.html" data-item-link="RKN-E01">RKN-E01</a>
+      
+        <span class="sep">/</span>
+        <span class="current">RKN-E01-S01</span>
+      
+    </div>
+    <h2 class="title">Story one</h2>
+    <div class="header-meta">
+      <span class="pill type">story</span>
+      <span class="pill status-backlog">backlog</span>
+      <span class="pill priority-medium">medium</span>
+      
+      
+      
+    </div>
+  </div>
+
+  <div class="body-grid">
+    <div>
+      <section class="section">
+        <h3>Description</h3>
+        
+        <div class="empty-section">No description.</div>
+        
+      </section>
+
+      
+
+      
+
+      
+
+      
+
+      
+    </div>
+
+    <aside>
+      <section class="section">
+        <h3>Details</h3>
+        <table class="kv-table">
+          <tr><td class="k">ID</td><td class="v"><code>RKN-E01-S01</code></td></tr>
+          <tr><td class="k">Type</td><td class="v">story</td></tr>
+          
+          <tr><td class="k">Priority</td><td class="v">medium</td></tr>
+          <tr><td class="k">Status</td><td class="v">backlog</td></tr>
+          <tr><td class="k">Project</td><td class="v"><a href="items/RKN.html" data-item-link="RKN">RKN</a></td></tr>
+          <tr><td class="k">Parent</td><td class="v"><a href="items/RKN-E01.html" data-item-link="RKN-E01">RKN-E01</a></td></tr>
+          
+          
+          
+          
+          
+          
+          
+          <tr><td class="k">Created by</td><td class="v">@alice · <TS></td></tr>
+          <tr><td class="k">Updated</td><td class="v"><TS></td></tr>
+          <tr><td class="k">Version</td><td class="v">1</td></tr>
+          
+        </table>
+      </section>
+
+      
+    </aside>
+  </div>
+</div>
+</template>
+
+<template id="item-RKN-E01-S02" data-permalink="items/RKN-E01-S02.html">
+<div class="item-detail">
+  <div class="header-block">
+    <div class="breadcrumb-row">
+      
+        
+        <a href="items/RKN.html" data-item-link="RKN">RKN</a>
+      
+        <span class="sep">/</span>
+        <a href="items/RKN-E01.html" data-item-link="RKN-E01">RKN-E01</a>
+      
+        <span class="sep">/</span>
+        <span class="current">RKN-E01-S02</span>
+      
+    </div>
+    <h2 class="title">Story two</h2>
+    <div class="header-meta">
+      <span class="pill type">story</span>
+      <span class="pill status-blocked">blocked</span>
+      <span class="pill priority-high">high</span>
+      
+      <span class="when">claimed by <strong>@alice</strong> · <TS></span>
+      
+    </div>
+  </div>
+
+  <div class="body-grid">
+    <div>
+      <section class="section">
+        <h3>Description</h3>
+        
+        <div class="empty-section">No description.</div>
+        
+      </section>
+
+      
+
+      
+
+      
+
+      
+
+      
+      <section class="section">
+        <h3>Journal</h3>
+        <div class="journal-feed">
+          
+          <div class="journal-entry">
+            <span class="ts"><TS></span>
+            <div class="body">
+              <span class="actor">alice</span><span class="event">claimed</span>
+              
+            </div>
+          </div>
+          
+          <div class="journal-entry">
+            <span class="ts"><TS></span>
+            <div class="body">
+              <span class="actor">alice</span><span class="event">heartbeat</span>
+              
+            </div>
+          </div>
+          
+        </div>
+      </section>
+      
+    </div>
+
+    <aside>
+      <section class="section">
+        <h3>Details</h3>
+        <table class="kv-table">
+          <tr><td class="k">ID</td><td class="v"><code>RKN-E01-S02</code></td></tr>
+          <tr><td class="k">Type</td><td class="v">story</td></tr>
+          
+          <tr><td class="k">Priority</td><td class="v">high</td></tr>
+          <tr><td class="k">Status</td><td class="v">blocked</td></tr>
+          <tr><td class="k">Project</td><td class="v"><a href="items/RKN.html" data-item-link="RKN">RKN</a></td></tr>
+          <tr><td class="k">Parent</td><td class="v"><a href="items/RKN-E01.html" data-item-link="RKN-E01">RKN-E01</a></td></tr>
+          
+          
+          <tr><td class="k">Lease ID</td><td class="v"><code><ULID></code></td></tr>
+          <tr><td class="k">Lease expires</td><td class="v"><TS></td></tr>
+          
+          
+          
+          <tr><td class="k">Created by</td><td class="v">@alice · <TS></td></tr>
+          <tr><td class="k">Updated</td><td class="v"><TS></td></tr>
+          <tr><td class="k">Version</td><td class="v">5</td></tr>
+          
+        </table>
+      </section>
+
+      
+    </aside>
+  </div>
+</div>
+</template>
+
+</div>
+
+
+<footer class="foot"><span>static dashboard rendered by <span class="mono">corvee render</span></span></footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

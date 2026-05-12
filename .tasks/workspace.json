@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "workspace_name": "corvee",
+  "default_project": "TTR",
+  "claim_ttl_minutes": 60,
+  "heartbeat_interval_minutes": 30,
+  "critical_path": [
+    "TTR-E01-S01",
+    "TTR-E01-S08",
+    "TTR-E01-S19",
+    "TTR-E03-S05",
+    "TTR-E03-S12",
+    "TTR-E04-S08",
+    "TTR-E07-S02",
+    "TTR-E07-S09"
+  ],
+  "git": {
+    "auto_commit": false,
+    "auto_sync_seconds": null
+  }
+}

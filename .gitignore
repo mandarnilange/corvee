@@ -1,0 +1,31 @@
+# Build artifacts
+bin/
+dist/
+
+# Test artifacts
+coverage.out
+coverage.html
+*.test
+*.out
+
+# Local corvee workspace cache (never source of truth)
+.tasks/index.json
+.tasks/locks/
+.tasks/operations/
+
+# Per-VM agent identity (never synced — see docs/spec-questions.md SQ-003)
+.tasks/local.json
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local Claude Code session state (plans, scheduled tasks, etc.)
+.claude/

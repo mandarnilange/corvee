@@ -1,0 +1,4 @@
+# Reserved for E2E fixtures that need a pre-built empty workspace.
+# Phase 1 E2E (TTR-E01-S19) creates fresh workspaces via t.TempDir + task init,
+# so this directory stays empty for now. Future tests that need a frozen
+# baseline workspace will populate it.

@@ -1,0 +1,149 @@
+{{define "item-panel"}}
+<div class="item-detail">
+  <div class="header-block">
+    <div class="breadcrumb-row">
+      {{range $i, $bc := .Breadcrumbs}}
+        {{if $i}}<span class="sep">/</span>{{end}}
+        {{if $bc.IsCurrent}}<span class="current">{{$bc.ID}}</span>{{else if $bc.URL}}<a href="{{$bc.URL}}" data-item-link="{{$bc.ID}}">{{$bc.ID}}</a>{{else}}<span>{{$bc.ID}}</span>{{end}}
+      {{end}}
+    </div>
+    <h2 class="title">{{.Title}}</h2>
+    <div class="header-meta">
+      <span class="pill type">{{.Type}}</span>
+      <span class="pill status-{{.Status}}">{{.Status}}</span>
+      {{if .Priority}}<span class="pill priority-{{.Priority}}">{{.Priority}}</span>{{end}}
+      {{if .Kind}}<span class="pill">{{.Kind}}</span>{{end}}
+      {{if .Assignee}}<span class="when">claimed by <strong>@{{.Assignee}}</strong>{{if .ClaimedAt}} · {{.ClaimedAt}}{{end}}</span>{{end}}
+      {{if .CompletedAt}}<span class="when">completed {{.CompletedAt}}</span>{{end}}
+    </div>
+  </div>
+
+  <div class="body-grid">
+    <div>
+      <section class="section">
+        <h3>Description</h3>
+        {{if .Description}}
+        <div class="description">{{.Description}}</div>
+        {{else}}
+        <div class="empty-section">No description.</div>
+        {{end}}
+      </section>
+
+      {{if .AcceptanceCriteria}}
+      <section class="section">
+        <h3>Acceptance Criteria</h3>
+        <ul>
+          {{range .AcceptanceCriteria}}<li>{{.}}</li>{{end}}
+        </ul>
+      </section>
+      {{end}}
+
+      {{if .Dependencies}}
+      <section class="section">
+        <h3>Depends On</h3>
+        <div class="deps-list">
+          {{range .Dependencies}}
+          {{if .Found}}
+          <div class="dep-row">
+            <a href="{{.URL}}" data-item-link="{{.ID}}">{{.ID}}</a>
+            <span class="dep-title">{{.Title}}</span>
+            <span class="pill status-{{.Status}} dep-status">{{.Status}}</span>
+          </div>
+          {{else}}
+          <div class="dep-row missing"><span>{{.ID}}</span><span class="dep-title">(not in workspace)</span></div>
+          {{end}}
+          {{end}}
+        </div>
+      </section>
+      {{end}}
+
+      {{if .Blocks}}
+      <section class="section">
+        <h3>Blocks</h3>
+        <div class="blocks-list">
+          {{range .Blocks}}
+          {{if .Found}}
+          <div class="dep-row">
+            <a href="{{.URL}}" data-item-link="{{.ID}}">{{.ID}}</a>
+            <span class="dep-title">{{.Title}}</span>
+            <span class="pill status-{{.Status}} dep-status">{{.Status}}</span>
+          </div>
+          {{else}}
+          <div class="dep-row missing"><span>{{.ID}}</span><span class="dep-title">(not in workspace)</span></div>
+          {{end}}
+          {{end}}
+        </div>
+      </section>
+      {{end}}
+
+      {{if .Children}}
+      <section class="section">
+        <h3>Children</h3>
+        <div class="blocks-list">
+          {{range .Children}}
+          <div class="dep-row">
+            <a href="{{.URL}}" data-item-link="{{.ID}}">{{.ID}}</a>
+            <span class="dep-title">{{.Title}}</span>
+            <span class="pill status-{{.Status}} dep-status">{{.Status}}</span>
+          </div>
+          {{end}}
+        </div>
+      </section>
+      {{end}}
+
+      {{if .Journal}}
+      <section class="section">
+        <h3>Journal</h3>
+        <div class="journal-feed">
+          {{range .Journal}}
+          <div class="journal-entry">
+            <span class="ts">{{.Timestamp}}</span>
+            <div class="body">
+              <span class="actor">{{.Actor}}</span><span class="event">{{.Event}}</span>
+              {{if .Note}}<div class="note">{{.Note}}</div>{{end}}
+            </div>
+          </div>
+          {{end}}
+        </div>
+      </section>
+      {{end}}
+    </div>
+
+    <aside>
+      <section class="section">
+        <h3>Details</h3>
+        <table class="kv-table">
+          <tr><td class="k">ID</td><td class="v"><code>{{.ID}}</code></td></tr>
+          <tr><td class="k">Type</td><td class="v">{{.Type}}</td></tr>
+          {{if .Kind}}<tr><td class="k">Kind</td><td class="v">{{.Kind}}</td></tr>{{end}}
+          {{if .Priority}}<tr><td class="k">Priority</td><td class="v">{{.Priority}}</td></tr>{{end}}
+          <tr><td class="k">Status</td><td class="v">{{.Status}}</td></tr>
+          {{if .ProjectID}}<tr><td class="k">Project</td><td class="v">{{if .ProjectURL}}<a href="{{.ProjectURL}}" data-item-link="{{.ProjectID}}">{{.ProjectID}}</a>{{else}}{{.ProjectID}}{{end}}</td></tr>{{end}}
+          {{if .ParentID}}<tr><td class="k">Parent</td><td class="v">{{if .ParentURL}}<a href="{{.ParentURL}}" data-item-link="{{.ParentID}}">{{.ParentID}}</a>{{else}}{{.ParentID}}{{end}}</td></tr>{{end}}
+          {{if .DueDate}}<tr><td class="k">Due</td><td class="v {{if .DueOverdue}}overdue{{end}}">{{.DueDate}}</td></tr>{{end}}
+          {{if .EstimatedHours}}<tr><td class="k">Estimated hours</td><td class="v">{{.EstimatedHours}}</td></tr>{{end}}
+          {{if .LeaseID}}<tr><td class="k">Lease ID</td><td class="v"><code>{{.LeaseID}}</code></td></tr>{{end}}
+          {{if .LeaseExpiresAt}}<tr><td class="k">Lease expires</td><td class="v">{{.LeaseExpiresAt}}</td></tr>{{end}}
+          {{if .RequiredCapabilities}}<tr><td class="k">Required capabilities</td><td class="v">{{range .RequiredCapabilities}}<span class="tag-chip">{{.}}</span>{{end}}</td></tr>{{end}}
+          {{if .Tags}}<tr><td class="k">Tags</td><td class="v">{{range .Tags}}<span class="tag-chip">{{.}}</span>{{end}}</td></tr>{{end}}
+          {{if .Aliases}}<tr><td class="k">Aliases</td><td class="v">{{range .Aliases}}<code>{{.}}</code> {{end}}</td></tr>{{end}}
+          {{if .CreatedBy}}<tr><td class="k">Created by</td><td class="v">@{{.CreatedBy}}{{if .CreatedAt}} · {{.CreatedAt}}{{end}}</td></tr>{{end}}
+          {{if .UpdatedAt}}<tr><td class="k">Updated</td><td class="v">{{.UpdatedAt}}</td></tr>{{end}}
+          {{if .Version}}<tr><td class="k">Version</td><td class="v">{{.Version}}</td></tr>{{end}}
+          {{if .Deliverable}}<tr><td class="k">Deliverable</td><td class="v">{{.Deliverable}}</td></tr>{{end}}
+        </table>
+      </section>
+
+      {{if .Impact.Risk}}
+      <section class="section">
+        <h3>Impact</h3>
+        <table class="kv-table">
+          <tr><td class="k">Risk</td><td class="v">{{.Impact.Risk}}</td></tr>
+          {{if .Impact.Files}}<tr><td class="k">Files</td><td class="v">{{range .Impact.Files}}<code>{{.}}</code><br>{{end}}</td></tr>{{end}}
+        </table>
+      </section>
+      {{end}}
+    </aside>
+  </div>
+</div>
+{{end}}

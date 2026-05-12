@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Run the full CI gate before allowing a push. Mirrors what GitHub Actions
+# runs so failures are caught locally rather than after the round-trip.
+#
+# Install with: make hooks-install
+set -euo pipefail
+
+# Resolve repo root regardless of where the hook is invoked from.
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+echo "[pre-push] running make ci ..."
+make ci
+echo "[pre-push] make ci passed."

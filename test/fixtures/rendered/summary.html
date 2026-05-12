@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rkn — Summary</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-summary">
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">c</span>
+    <h1>rkn</h1>
+  </div>
+  <nav class="views">
+    <a href="index.html" class="">Board</a>
+    <a href="tree.html" class="">Tree</a>
+    <a href="summary.html" class="active">Summary</a>
+  </nav>
+  <div class="topbar-spacer"></div>
+  <button type="button" class="icon-btn" data-theme-toggle data-theme-mode="auto" aria-label="Toggle theme (auto / light / dark)" title="Toggle theme (auto / light / dark)">
+    <svg class="icon-auto"  viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 2v10a5 5 0 0 1 0-10z"/></svg>
+    <svg class="icon-light" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 4.5A3.5 3.5 0 1 1 4.5 8 3.5 3.5 0 0 1 8 4.5zM7.5 0h1v2h-1zm0 14h1v2h-1zM0 7.5h2v1H0zm14 0h2v1h-2zM2.4 2.4l.7.7L4.5 4.5l-.7-.7zm9.1 9.1.7.7 1.4 1.4-.7.7zm-9.1 1.4.7-.7L4.5 11.5l-.7.7zM11.5 4.5l.7-.7L13.6 2.4l-.7-.7z"/></svg>
+    <svg class="icon-dark"  viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M6 1.5A6.5 6.5 0 1 0 14.5 10 5.5 5.5 0 0 1 6 1.5z"/></svg>
+  </button>
+</header>
+
+<main>
+  <section class="hero-stats" aria-label="Workspace metrics">
+    <div class="hero-stat accent">
+      <div class="label">Completion</div>
+      <div class="value">0%</div>
+      <div class="delta">0 of 4 items done</div>
+    </div>
+    <div class="hero-stat">
+      <div class="label">In flight</div>
+      <div class="value">0</div>
+      <div class="delta">0 claimed, 0 in review</div>
+    </div>
+    <div class="hero-stat warn">
+      <div class="label">Open backlog</div>
+      <div class="value">4</div>
+      <div class="delta">3 backlog · 0 ready</div>
+    </div>
+    
+    <div class="hero-stat danger">
+      <div class="label">Blocked</div>
+      <div class="value">1</div>
+      <div class="delta">needs unblock</div>
+    </div>
+    
+    <div class="hero-stat">
+      <div class="label">Throughput</div>
+      <div class="value">0</div>
+      <div class="delta">completions · 1 contributor</div>
+    </div>
+  </section>
+
+  
+
+  <section class="panel projects-panel">
+    <h2>Projects</h2>
+    
+    <div class="project-row">
+      <header>
+        <h3><a href="items/RKN.html">Project Rikonect</a> <span class="step-id">RKN</span></h3>
+        <span class="pct">0%</span>
+      </header>
+      <div class="bar segmented" title="blocked 1 · backlog 3">
+        <span class="seg-blocked" style="width:25%" title="blocked: 1"></span><span class="seg-backlog" style="width:75%" title="backlog: 3"></span>
+      </div>
+      <div class="counts">
+        <span><span class="num">0</span>done</span>
+        <span><span class="num">0</span>in_progress</span>
+        <span><span class="num">1</span>blocked</span>
+        <span><span class="num">4</span>total</span>
+      </div>
+    </div>
+    
+  </section>
+
+  
+  <section class="panel epics-panel">
+    <h2>Epics</h2>
+    
+    <div class="project-row">
+      <header>
+        <h3><a href="items/RKN-E01.html">First epic</a> <span class="step-id">RKN-E01</span></h3>
+        <span class="pct">0%</span>
+      </header>
+      <div class="bar"><div class="fill " style="width:0%"></div></div>
+      <div class="counts">
+        <span><span class="num">0</span>done</span>
+        <span><span class="num">0</span>in_progress</span>
+        <span><span class="num">1</span>blocked</span>
+        <span><span class="num">3</span>total</span>
+      </div>
+    </div>
+    
+  </section>
+  
+
+  
+  <section class="panel blocked-panel">
+    <h2>Blocked Items</h2>
+    <ul>
+      
+      <li><a href="items/RKN-E01-S02.html"><span class="step-id">RKN-E01-S02</span></a> Story two</li>
+      
+    </ul>
+  </section>
+  
+
+  <section class="panel activity">
+    <h2>Recent Activity</h2>
+    
+    <ul>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">updated</span>
+        <a class="item-link" href="items/RKN-E01-S02.html">RKN-E01-S02</a>
+      </li>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">heartbeat</span>
+        <a class="item-link" href="items/RKN-E01-S02.html">RKN-E01-S02</a>
+      </li>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">claimed</span>
+        <a class="item-link" href="items/RKN-E01-S02.html">RKN-E01-S02</a>
+      </li>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">updated</span>
+        <a class="item-link" href="items/RKN-E01-S02.html">RKN-E01-S02</a>
+      </li>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">created</span>
+        <a class="item-link" href="items/RKN-E01-S02.html">RKN-E01-S02</a>
+      </li>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">created</span>
+        <a class="item-link" href="items/RKN-E01-S01.html">RKN-E01-S01</a>
+      </li>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">created</span>
+        <a class="item-link" href="items/RKN-E01.html">RKN-E01</a>
+      </li>
+      
+      <li>
+        <span class="ts"><TS></span>
+        <span class="actor"><span class="avatar" style="background:ZgotmplZ">A</span>alice</span>
+        <span class="event">created</span>
+        <a class="item-link" href="items/RKN.html">RKN</a>
+      </li>
+      
+    </ul>
+    
+  </section>
+</main>
+<footer class="foot"><span>static dashboard rendered by <span class="mono">corvee render</span></span></footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

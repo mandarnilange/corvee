@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{.Theme}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.WorkspaceName}} — Tree</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-tree">
+{{template "header" .}}
+<main>
+  <section class="tree">
+    {{range .Roots}}
+    {{template "node" .}}
+    {{else}}
+    <div class="empty">no items</div>
+    {{end}}
+  </section>
+</main>
+
+{{template "drawer" .}}
+{{template "item-templates" .}}
+
+<footer class="foot"><span>static dashboard rendered by <span class="mono">corvee render</span></span></footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
+
+{{define "node"}}
+<details class="node type-{{.Type}}{{if not .HasChildren}} leaf{{end}}" {{if .Open}}open{{end}}>
+  <summary>
+    <span class="id">{{.ID}}</span>
+    <span class="title"><a class="title-link" href="{{.DetailURL}}" data-item-link="{{.ID}}">{{.Title}}</a></span>
+    <span class="pill status-{{.Status}}">{{.Status}}</span>
+    {{if .Priority}}<span class="pill priority-{{.Priority}}">{{.Priority}}</span>{{end}}
+    {{if .HasChildren}}<span class="completion">{{.CompletionPct}}%</span>{{end}}
+    {{if .Assignee}}<span class="meta">@{{.Assignee}}</span>{{end}}
+  </summary>
+  {{if .Children}}
+  <div class="children">
+    {{range .Children}}
+    {{template "node" .}}
+    {{end}}
+  </div>
+  {{end}}
+</details>
+{{end}}

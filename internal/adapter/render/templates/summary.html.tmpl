@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{.Theme}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.WorkspaceName}} — Summary</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-summary">
+{{template "header" .}}
+<main>
+  <section class="hero-stats" aria-label="Workspace metrics">
+    <div class="hero-stat accent">
+      <div class="label">Completion</div>
+      <div class="value">{{.Hero.CompletionPct}}%</div>
+      <div class="delta">{{.Hero.Done}} of {{.Hero.Total}} items done</div>
+    </div>
+    <div class="hero-stat">
+      <div class="label">In flight</div>
+      <div class="value">{{.Hero.InProgress}}</div>
+      <div class="delta">{{.Hero.Claimed}} claimed, {{.Hero.Review}} in review</div>
+    </div>
+    <div class="hero-stat warn">
+      <div class="label">Open backlog</div>
+      <div class="value">{{.Hero.Open}}</div>
+      <div class="delta">{{.Hero.Backlog}} backlog · {{.Hero.Ready}} ready</div>
+    </div>
+    {{if .Hero.Blocked}}
+    <div class="hero-stat danger">
+      <div class="label">Blocked</div>
+      <div class="value">{{.Hero.Blocked}}</div>
+      <div class="delta">needs unblock</div>
+    </div>
+    {{else}}
+    <div class="hero-stat ok">
+      <div class="label">Blocked</div>
+      <div class="value">0</div>
+      <div class="delta">nothing stuck</div>
+    </div>
+    {{end}}
+    <div class="hero-stat">
+      <div class="label">Throughput</div>
+      <div class="value">{{.Velocity.CompletedEvents}}</div>
+      <div class="delta">completions · {{.Velocity.DistinctActors}} {{if eq .Velocity.DistinctActors 1}}contributor{{else}}contributors{{end}}</div>
+    </div>
+  </section>
+
+  {{if .CriticalPath}}
+  <section class="panel critical-path">
+    <h2>Critical Path</h2>
+    <ol>
+      {{range .CriticalPath}}
+      <li class="{{if .Found}}{{.Status}}{{else}}missing{{end}}">
+        <span class="step-id"><a href="{{.DetailURL}}">{{.ID}}</a></span>
+        {{if .Found}}
+          <span class="step-title">{{.Title}}</span>
+          <span class="step-status">{{.Status}}</span>
+        {{else}}
+          <span class="step-title">(not in workspace)</span>
+        {{end}}
+      </li>
+      {{end}}
+    </ol>
+  </section>
+  {{end}}
+
+  <section class="panel projects-panel">
+    <h2>Projects</h2>
+    {{range .Projects}}
+    <div class="project-row">
+      <header>
+        <h3><a href="{{.DetailURL}}">{{.Title}}</a> <span class="step-id">{{.ID}}</span></h3>
+        <span class="pct">{{.CompletionPct}}%</span>
+      </header>
+      <div class="bar segmented" title="{{.SegmentSummary}}">
+        {{range .Segments}}<span class="seg-{{.Status}}" style="width:{{.WidthPct}}%" title="{{.Status}}: {{.Count}}"></span>{{end}}
+      </div>
+      <div class="counts">
+        <span><span class="num">{{.Done}}</span>done</span>
+        <span><span class="num">{{.InProgress}}</span>in_progress</span>
+        <span><span class="num">{{.Blocked}}</span>blocked</span>
+        <span><span class="num">{{.Total}}</span>total</span>
+      </div>
+    </div>
+    {{else}}
+    <div class="empty">no projects</div>
+    {{end}}
+  </section>
+
+  {{if .Epics}}
+  <section class="panel epics-panel">
+    <h2>Epics</h2>
+    {{range .Epics}}
+    <div class="project-row">
+      <header>
+        <h3><a href="{{.DetailURL}}">{{.Title}}</a> <span class="step-id">{{.ID}}</span></h3>
+        <span class="pct">{{.CompletionPct}}%</span>
+      </header>
+      <div class="bar"><div class="fill {{if eq .CompletionPct 100}}ok{{end}}" style="width:{{.CompletionPct}}%"></div></div>
+      <div class="counts">
+        <span><span class="num">{{.Done}}</span>done</span>
+        <span><span class="num">{{.InProgress}}</span>in_progress</span>
+        <span><span class="num">{{.Blocked}}</span>blocked</span>
+        <span><span class="num">{{.Total}}</span>total</span>
+      </div>
+    </div>
+    {{end}}
+  </section>
+  {{end}}
+
+  {{if .BlockedItems}}
+  <section class="panel blocked-panel">
+    <h2>Blocked Items</h2>
+    <ul>
+      {{range .BlockedItems}}
+      <li><a href="{{.DetailURL}}"><span class="step-id">{{.ID}}</span></a> {{.Title}}{{if .Note}} <span class="meta">— {{.Note}}</span>{{end}}</li>
+      {{end}}
+    </ul>
+  </section>
+  {{end}}
+
+  <section class="panel activity">
+    <h2>Recent Activity</h2>
+    {{if .Activity}}
+    <ul>
+      {{range .Activity}}
+      <li>
+        {{if .Timestamp}}<span class="ts">{{.Timestamp}}</span>{{end}}
+        <span class="actor"><span class="avatar" style="background:{{.ActorColor}}">{{.ActorInitial}}</span>{{or .Actor "unknown"}}</span>
+        <span class="event">{{.Label}}</span>
+        {{if .ItemID}}<a class="item-link" href="{{.DetailURL}}">{{.ItemID}}</a>{{end}}
+      </li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="empty">no events</p>
+    {{end}}
+  </section>
+</main>
+<footer class="foot"><span>static dashboard rendered by <span class="mono">corvee render</span></span></footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

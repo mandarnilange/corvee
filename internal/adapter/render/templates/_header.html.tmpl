@@ -1,0 +1,19 @@
+{{define "header"}}
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">c</span>
+    <h1>{{.WorkspaceName}}</h1>
+  </div>
+  <nav class="views">
+    <a href="{{.RootPath}}index.html" class="{{if eq .ActiveView "board"}}active{{end}}">Board</a>
+    <a href="{{.RootPath}}tree.html" class="{{if eq .ActiveView "tree"}}active{{end}}">Tree</a>
+    <a href="{{.RootPath}}summary.html" class="{{if eq .ActiveView "summary"}}active{{end}}">Summary</a>
+  </nav>
+  <div class="topbar-spacer"></div>
+  <button type="button" class="icon-btn" data-theme-toggle data-theme-mode="{{.Theme}}" aria-label="Toggle theme (auto / light / dark)" title="Toggle theme (auto / light / dark)">
+    <svg class="icon-auto"  viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 2v10a5 5 0 0 1 0-10z"/></svg>
+    <svg class="icon-light" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 4.5A3.5 3.5 0 1 1 4.5 8 3.5 3.5 0 0 1 8 4.5zM7.5 0h1v2h-1zm0 14h1v2h-1zM0 7.5h2v1H0zm14 0h2v1h-2zM2.4 2.4l.7.7L4.5 4.5l-.7-.7zm9.1 9.1.7.7 1.4 1.4-.7.7zm-9.1 1.4.7-.7L4.5 11.5l-.7.7zM11.5 4.5l.7-.7L13.6 2.4l-.7-.7z"/></svg>
+    <svg class="icon-dark"  viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M6 1.5A6.5 6.5 0 1 0 14.5 10 5.5 5.5 0 0 1 6 1.5z"/></svg>
+  </button>
+</header>
+{{end}}

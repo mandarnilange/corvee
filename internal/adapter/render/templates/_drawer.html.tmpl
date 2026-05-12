@@ -1,0 +1,20 @@
+{{define "drawer"}}
+<div class="drawer-backdrop" data-drawer-backdrop hidden></div>
+<aside class="drawer" data-drawer hidden aria-label="Item details">
+  <header class="drawer-head">
+    <a class="drawer-permalink" data-drawer-permalink href="#" title="Open standalone detail page in a new tab" rel="noopener" target="_blank">↗ open</a>
+    <button class="icon-btn" data-drawer-close type="button" aria-label="Close details">✕</button>
+  </header>
+  <div class="drawer-body" data-drawer-body>
+    <p class="empty">Click any item to see details here.</p>
+  </div>
+</aside>
+{{end}}
+
+{{define "item-templates"}}
+<div class="item-template-store" hidden aria-hidden="true">
+{{range .ItemPanels}}
+<template id="item-{{.ID}}" data-permalink="items/{{.ID}}.html">{{template "item-panel" .}}</template>
+{{end}}
+</div>
+{{end}}
