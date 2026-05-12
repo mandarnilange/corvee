@@ -8,9 +8,17 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/mandarnilange/corvee/internal/domain"
 )
+
+// testExecTimeout overrides the production 5s exec cap for tests. Under
+// `make test-race -count=10`, the macOS host runs every package in
+// parallel; fork+exec scheduling delays under that load can exceed 5s
+// and produce SIGKILL'd plugin processes before they can write their
+// marker file. 60s is comfortably above the worst observed delay.
+const testExecTimeout = 60 * time.Second
 
 func skipOnWindows(t *testing.T) {
 	t.Helper()
@@ -51,7 +59,7 @@ func TestDispatch_RunsApplicablePlugin(t *testing.T) {
 		t.Fatalf("Discover = %d, want 1", len(plugins))
 	}
 
-	if err := NewDispatcher().Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, false); err != nil {
+	if err := NewDispatcherWithTimeout(testExecTimeout).Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, false); err != nil {
 		t.Fatalf("Dispatch: %v", err)
 	}
 	if _, err := os.Stat(out); err != nil {
@@ -70,7 +78,7 @@ echo '{"veto":true,"reason":"nope"}'
 `
 	writePluginScript(t, pluginsDir, "guard", body)
 	plugins := NewRegistry(pluginsDir).Discover()
-	err := NewDispatcher().Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, false)
+	err := NewDispatcherWithTimeout(testExecTimeout).Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, false)
 	if !errors.Is(err, domain.ErrPluginVeto) {
 		t.Errorf("err = %v, want ErrPluginVeto", err)
 	}
@@ -87,7 +95,7 @@ func TestDispatch_AgentModeSkipsUnsafePlugins(t *testing.T) {
 	writePluginScript(t, pluginsDir, "unsafe", body)
 
 	plugins := NewRegistry(pluginsDir).Discover()
-	if err := NewDispatcher().Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, true); err != nil {
+	if err := NewDispatcherWithTimeout(testExecTimeout).Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, true); err != nil {
 		t.Fatalf("Dispatch: %v", err)
 	}
 	if _, err := os.Stat(out); err == nil {
@@ -110,7 +118,7 @@ func TestDispatch_AgentModeRunsSafePlugins(t *testing.T) {
 	}
 
 	plugins := NewRegistry(pluginsDir).Discover()
-	if err := NewDispatcher().Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, true); err != nil {
+	if err := NewDispatcherWithTimeout(testExecTimeout).Dispatch(context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, true); err != nil {
 		t.Fatalf("Dispatch: %v", err)
 	}
 	if _, err := os.Stat(out); err != nil {
@@ -129,7 +137,7 @@ func TestDispatch_ShellHook(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(hooksDir, "claimed.sh"), []byte(body), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := NewDispatcher().Dispatch(context.Background(), nil, hooksDir, domain.LifecycleEvent{Event: "claimed"}, false); err != nil {
+	if err := NewDispatcherWithTimeout(testExecTimeout).Dispatch(context.Background(), nil, hooksDir, domain.LifecycleEvent{Event: "claimed"}, false); err != nil {
 		t.Fatalf("Dispatch: %v", err)
 	}
 	if _, err := os.Stat(out); err != nil {
@@ -148,7 +156,7 @@ func TestDispatch_AllHook(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(hooksDir, "all.sh"), []byte(body), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := NewDispatcher().Dispatch(context.Background(), nil, hooksDir, domain.LifecycleEvent{Event: "completed"}, false); err != nil {
+	if err := NewDispatcherWithTimeout(testExecTimeout).Dispatch(context.Background(), nil, hooksDir, domain.LifecycleEvent{Event: "completed"}, false); err != nil {
 		t.Fatalf("Dispatch: %v", err)
 	}
 	if _, err := os.Stat(out); err != nil {
@@ -179,6 +187,28 @@ func TestDispatch_RefusesMalformedEventName(t *testing.T) {
 		domain.LifecycleEvent{Event: "bad name with spaces"}, false)
 	if err != nil {
 		t.Errorf("Dispatch returned err for malformed event: %v", err)
+	}
+}
+
+func TestDispatch_RespectsExecTimeoutOverride(t *testing.T) {
+	// t.Parallel() removed: fork+exec timing test.
+	skipOnWindows(t)
+	pluginsDir := t.TempDir()
+	out := filepath.Join(t.TempDir(), "marker")
+	// Plugin sleeps 5s before writing the marker. Override timeout to
+	// 50ms — the dispatcher must SIGKILL the plugin before it can
+	// finish, leaving the marker absent.
+	body := "#!/bin/sh\nsleep 5\necho ran > " + out + "\n"
+	writePluginScript(t, pluginsDir, "slow", body)
+	plugins := NewRegistry(pluginsDir).Discover()
+
+	err := NewDispatcherWithTimeout(50*time.Millisecond).Dispatch(
+		context.Background(), plugins, "", domain.LifecycleEvent{Event: "claimed"}, false)
+	if err != nil {
+		t.Fatalf("Dispatch: %v", err)
+	}
+	if _, statErr := os.Stat(out); statErr == nil {
+		t.Errorf("plugin completed despite tight timeout; override not honored")
 	}
 }
 

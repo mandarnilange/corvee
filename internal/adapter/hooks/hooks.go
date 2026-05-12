@@ -99,15 +99,28 @@ func discover(pluginsDir string) []domain.Plugin {
 	return plugins
 }
 
-// Dispatcher implements domain.HookDispatcher. Stateless; safe to
-// share across goroutines.
-type Dispatcher struct{}
+// Dispatcher implements domain.HookDispatcher. Safe to share across
+// goroutines: the only state is the per-instance execTimeout, set at
+// construction and not mutated.
+type Dispatcher struct {
+	execTimeout time.Duration
+}
 
-// NewDispatcher returns the default Dispatcher.
-func NewDispatcher() *Dispatcher { return &Dispatcher{} }
+// NewDispatcher returns the default Dispatcher with the production
+// execTimeout. Use NewDispatcherWithTimeout to override for tests that
+// run under heavy parallelism.
+func NewDispatcher() *Dispatcher { return &Dispatcher{execTimeout: execTimeout} }
+
+// NewDispatcherWithTimeout returns a Dispatcher whose plugin / shell-hook
+// fork+exec is capped at d instead of the production execTimeout. Intended
+// for tests under `-race -count=N` where fork+exec scheduling delays on
+// macOS can exceed the production cap.
+func NewDispatcherWithTimeout(d time.Duration) *Dispatcher {
+	return &Dispatcher{execTimeout: d}
+}
 
 // Dispatch implements domain.HookDispatcher.
-func (Dispatcher) Dispatch(ctx context.Context, plugins []domain.Plugin, hooksDir string, ev domain.LifecycleEvent, agentMode bool) error {
+func (d *Dispatcher) Dispatch(ctx context.Context, plugins []domain.Plugin, hooksDir string, ev domain.LifecycleEvent, agentMode bool) error {
 	// Fast path: nothing to do.
 	if len(plugins) == 0 && hooksDir == "" {
 		return nil
@@ -126,7 +139,7 @@ func (Dispatcher) Dispatch(ctx context.Context, plugins []domain.Plugin, hooksDi
 				slog.String("event", ev.Event))
 			continue
 		}
-		if err := runPlugin(ctx, p, body); err != nil {
+		if err := runPlugin(ctx, d.execTimeout, p, body); err != nil {
 			if errors.Is(err, domain.ErrPluginVeto) {
 				return err
 			}
@@ -137,20 +150,20 @@ func (Dispatcher) Dispatch(ctx context.Context, plugins []domain.Plugin, hooksDi
 		}
 	}
 	if hooksDir != "" {
-		runShellHooks(ctx, hooksDir, ev.Event, body)
+		runShellHooks(ctx, d.execTimeout, hooksDir, ev.Event, body)
 	}
 	return nil
 }
 
 // runPlugin spawns the plugin binary, feeds it the event JSON on
 // stdin, and reads its stdout for an optional veto response. Capped
-// at execTimeout regardless of the parent context.
-func runPlugin(ctx context.Context, p domain.Plugin, eventJSON []byte) error {
+// at the supplied timeout regardless of the parent context.
+func runPlugin(ctx context.Context, timeout time.Duration, p domain.Plugin, eventJSON []byte) error {
 	bin := p.Manifest.Command
 	if !filepath.IsAbs(bin) {
 		bin = filepath.Join(p.Dir, bin)
 	}
-	cctx, cancel := context.WithTimeout(ctx, execTimeout)
+	cctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	// #nosec G204 -- bin is resolved from a discovered plugin
 	// manifest under .tasks/plugins/, not external input.
@@ -178,7 +191,7 @@ func runPlugin(ctx context.Context, p domain.Plugin, eventJSON []byte) error {
 // when present and executable. event must match validEventName so a
 // future caller can't smuggle env-injection payloads through the
 // CORVEE_HOOK_EVENT variable.
-func runShellHooks(ctx context.Context, hooksDir, event string, eventJSON []byte) {
+func runShellHooks(ctx context.Context, timeout time.Duration, hooksDir, event string, eventJSON []byte) {
 	if !validEventName.MatchString(event) {
 		slog.Warn("refusing to run shell hooks for malformed event name",
 			slog.String("event", event))
@@ -193,12 +206,12 @@ func runShellHooks(ctx context.Context, hooksDir, event string, eventJSON []byte
 		if info.IsDir() || info.Mode()&0o111 == 0 {
 			continue
 		}
-		runOneHook(ctx, path, candidate, event, eventJSON)
+		runOneHook(ctx, timeout, path, candidate, event, eventJSON)
 	}
 }
 
-func runOneHook(parentCtx context.Context, path, candidate, event string, eventJSON []byte) {
-	cctx, cancel := context.WithTimeout(parentCtx, execTimeout)
+func runOneHook(parentCtx context.Context, timeout time.Duration, path, candidate, event string, eventJSON []byte) {
+	cctx, cancel := context.WithTimeout(parentCtx, timeout)
 	defer cancel()
 	// #nosec G204 -- path is a discovered .tasks/hooks/<event>.sh
 	// file vetted via os.Stat above; not external input.
