@@ -29,3 +29,9 @@ go.work.sum
 
 # Local Claude Code session state (plans, scheduled tasks, etc.)
 .claude/
+
+# skills.sh consumer-side artifacts when corvee's own skills are installed
+# locally for testing (e.g. via `npx skills add mandarnilange/corvee`).
+# corvee ships skills under skills/; these are the harness's installed copy.
+.agents/
+skills-lock.json
